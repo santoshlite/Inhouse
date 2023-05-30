@@ -1,10 +1,33 @@
 <script>
   import { onMount } from 'svelte';
 
-  let inputValue = "No text";
-  let responseValue;
+  let inputValue = "";
+  let responseValue = "";
+  let indexedInfo = "";
+
+  async function getUploadedItems() {
+    const response = await fetch("./get_uploaded_count");
+    const data = await response.text();
+    return data;
+  }
+
+  async function fetchData() {
+    const count = await getUploadedItems();
+    if(count === "1" || count === "0" ){
+      indexedInfo = count + " item indexed";
+      return
+    }
+    indexedInfo = count + " items indexed.";
+  }
 
   async function sendData() {
+    if (inputValue === "") {
+      responseValue = "No text :(";
+      return
+    }
+
+    responseValue = "Loading...";
+
     const response = await fetch('/search', {
       method: 'POST',
       headers: {
@@ -12,12 +35,12 @@
       },
       body: JSON.stringify({ value: inputValue })
     });
-    const data = await response.text();
-    responseValue = data;
+    const data = await response.json();
+    responseValue = data.result;
   }
 
   let fileInput;
-  let message = "No new files uploaded :)"
+  let message = ""
 
   async function uploadFile() {
     message = "Uploading..."
@@ -46,25 +69,29 @@
 
     const data = await response.json();
     message = data.Message;
+    fetchData();
   }
-
-  onMount(() => {
-    sendData();
-  });
 
   function handleFileChange(event) {
     fileInput = event.target;
     uploadFile();
   }
 
+  onMount(() => {
+    fetchData();
+  });
+
 </script>
 
 <h1>Unamed app 🕵️‍♂️</h1>
 <input type="text" bind:value={inputValue}/>
 <button on:click={sendData}>Submit</button>
+
+<i>{indexedInfo}</i>
+
 <p>{responseValue}</p>
 
-
+<h3>Upload files</h3>
 <form onsubmit="return false" enctype="multipart/form-data">
   <input type="file" on:change={handleFileChange}  multiple/>
 </form>
