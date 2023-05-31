@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import History from './lib/History.svelte'
 
   let inputValue = "";
   let responseValue = "";
@@ -81,18 +82,26 @@
     fetchData();
   });
 
-</script>
+</script>  
 
-<h1>Unamed app 🕵️‍♂️</h1>
-<input type="text" bind:value={inputValue}/>
-<button on:click={sendData}>Submit</button>
+<div class="row">
+  <History />
+</div>
 
-<i>{indexedInfo}</i>
+<div class="wrapper1">
+  <div class="content-container">
+    <h1>inhouse 🏠</h1>
+    <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue}/>
+    <button on:click={sendData}>Submit</button>
 
-<p>{responseValue}</p>
+    <i class="custom-i"> {indexedInfo}</i>
 
-<h3>Upload files</h3>
-<form onsubmit="return false" enctype="multipart/form-data">
-  <input type="file" on:change={handleFileChange}  multiple/>
-</form>
-<p>{message}</p>
+    <p>{responseValue}</p>
+
+    <h4>Upload new files</h4>
+    <form onsubmit="return false" enctype="multipart/form-data">
+      <input type="file" on:change={handleFileChange}  multiple/>
+    </form>
+    <p>{message}</p>
+  </div>
+</div>
