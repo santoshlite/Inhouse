@@ -83,10 +83,10 @@ def search():
                 with open(file_path, 'r') as file:
                     content = file.read()
                     docs.append(content)
-
+    
     if len(docs) == 0:
         return jsonify({'result': 'You need to upload files first!'})
-
+    
     #Encode query and documents
     query_emb = model.encode(query)
     doc_emb = model.encode(docs)
@@ -110,11 +110,15 @@ def search():
         'question': query,
         'context': joined_results
     }
+    
+    print("waiting")
+    out = nlp(QA_input)
 
-    output = clean_res(nlp(QA_input))
+    print("done")
+    output = clean_res(out)
     
     response = {"result": output}
-
+    print(response)
     return response
 
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -145,5 +149,6 @@ def upload_file():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
+
 
 
