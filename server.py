@@ -3,10 +3,9 @@ from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 from sentence_transformers import SentenceTransformer, util
 from threading import Thread
 from pymongo import MongoClient
+import json
 import textract
 import os
-
-import json
 
 
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
@@ -16,6 +15,7 @@ deberta_model = AutoModelForQuestionAnswering.from_pretrained('navteca/deberta-v
 deberta_tokenizer = AutoTokenizer.from_pretrained('navteca/deberta-v3-base-squad2')
 
 nlp = pipeline('question-answering', model=deberta_model, tokenizer=deberta_tokenizer)
+
 
 app = Flask(__name__)
 
@@ -42,7 +42,7 @@ def get_uploaded_files():
         if os.path.isfile(file_path):
             uploaded_files.append(filename)
 
-    return uploaded_file
+    return 
 
 def update_mongo_record(fileName, text):
     client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
@@ -78,11 +78,13 @@ def clean_res(res):
 
     return text
 
+@app.route("/app")
+def svelte_app():
+    return send_from_directory('client/public', 'index.html')
 
-# Path for our main Svelte page
 @app.route("/")
 def base():
-    return send_from_directory('client/public', 'index.html')
+    return send_from_directory('client/public', 'frontpage.html')
 
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")
@@ -132,10 +134,8 @@ def search():
         'context': joined_results
     }
     
-    print("waiting")
     out = nlp(QA_input)
 
-    print("done")
     output = clean_res(out)
     
     response = {"result": output}
@@ -166,14 +166,11 @@ def upload_file():
 
         os.remove("uploads/" + filename)
 
-
         update_mongo_record(filename, text)
 
         print("Done!")
 
-
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
 if __name__ == "__main__":
-
     app.run(debug=True, port=5002)
