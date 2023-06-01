@@ -6,11 +6,10 @@
 
 
 <div class="wrapper">
-    <h3>{history}</h3>
-  
+  <div class="title">{history}</div>
     <div class="list-container">
       {#each dummyList as item}
-        <div class="history-item">{item}</div>
+        <div class="history-item">📄 &nbsp; {item}</div>
       {/each}
     </div>
   </div>
