@@ -1,9 +1,9 @@
 from flask import Flask, send_from_directory, request, jsonify
 from threading import Thread
+from pymongo import MongoClient
 import textract
 import os
 import json
-import requests
 
 API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/msmarco-distilbert-base-tas-b"
 headers = {"Authorization": "Bearer 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"}
@@ -20,7 +20,26 @@ def get_uploaded_files():
         if os.path.isfile(file_path):
             uploaded_files.append(filename)
 
-    return uploaded_files
+    return uploaded_file
+
+def update_mongo_record(fileName, text):
+    client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
+
+    db = client["myDatabase"]
+
+    uploadFile = {
+      "FileName": fileName,
+      "Content": text
+    }
+
+    #Search for a collection called 'uploadFiles' under db database (create one if none is found)
+    uploadFiles = db.uploadFiles
+
+    uploadFiles.insert_one(uploadFile)
+
+    client.close()
+
+    pass
 
 # Path for our main Svelte page
 @app.route("/")
@@ -32,25 +51,9 @@ def base():
 def home(path):
     return send_from_directory('client/public', path)
 
-def query(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.json()
-
 @app.route('/search', methods=['POST'])
-def search():    
-    data = request.json
-    print(data['value'])
-    output = query({
-            "inputs": {
-                "source_sentence": "happy dog",
-                "sentences": [
-                    "That is a happy dog",
-                    "That is a very happy person",
-                    "Today is a sunny day"
-                ]
-            }
-        })
-    return output
+def search():
+    return 'hello'
 
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
@@ -76,10 +79,12 @@ def upload_file():
             file.write(text)
 
         os.remove("uploads/" + filename)
+
+        update_mongo_record(filename, text)
+
         print("Done!")
 
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
-

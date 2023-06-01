@@ -1,0 +1,80 @@
+Course outline, May 2023
+
+MATH 222: Calculus 3 (3 credits)
+Description: In this three credit course, students will learn the techniques of multivariable
+calculus required for a degree in the sciences. Students will extend concepts from Calculus 1
+and Calculus 2 to a higher dimensional context. Applications will include ﬁnding the
+instantaneous velocity vector of an object moving in three dimensional space, maximizing or
+minimizing a function of two or three variables, and integrating over regions 2D or 3D.
+Additionally, in the ﬁrst few lectures, we will introduce the Taylor series of a function, which
+students will use to approximate complicated functions by simple polynomials.
+Lecture time: MTWR: 11:05 am-1:25 pm
+Lecture location: Leacock Building, room 26
+Course instructor: Gavin Barill (gavin.barill@mcgill.ca, see “email policy” below)
+Instructor ofﬁce hours: MTWR: 2:30pm-3:30pm, BURN 1031 or the hallway outside BURN 1024
+Course website: We will be using MyCourses. Any announcements or course-related
+information will be posted there.
+Prerequisites: MATH 141. Familiarity with vector geometry or Corequisite: MATH 133
+Restriction: Not open to students who have taken CEGEP course 201-303 or MATH 150, MATH
+151 or MATH 262.
+Textbook: The lectures will be following “Multivariable Calculus” (9th edition) by Stewart,
+Clegg, and Watson.
+Textbook note (older version): Please feel free to use an older version of the textbook if you
+would like. The section numbers and question numbers might be different, but the content
+should be the same. However, I might suggest problems from the textbook, so make sure
+that if you have a past version that you are able to ﬁgure out which questions I suggest.
+Textbook note (textbook from MATH 140/141): Stewart Calculus has many versions, and the
+textbook you used in MATH 140/141 might have multivariable calculus in it. If your textbook
+has chapters numbered 10 - 16 then your book has multivariable calculus in it and will sufﬁce
+for this class. If you are unsure if your textbook is appropriate please come ask me after class.
+Evaluation: Your ﬁnal grade will be calculated as the greater of the two options:
+Option 1: Final grade = (WeBWorK mini-assignments)・5% + (WeBWorK assignments)・20%
++ (Midterm)・25% + (Final exam)・50%
+Option 2: Final grade = (WeBWorK mini-assignment)・5% + (WeBWorK assignments)・20%
++ (Final exam)・75%
+○
+○
+○
+○
+
+WeBWorK mini-assignments: Your grade will be the average of your best 12 of 16
+mini-assignments. For details on the mini-assignments, see below.
+WeBWorK assignments: There are four WeBWorK assignments, each of equal weight.
+Midterm: The midterm will tentatively be held on Monday May 15th, out of class time.
+Final exam: The ﬁnal exam will be taken on either May 31st or June 1st, it will be posted
+at this link roughly two weeks before the exam.
+
+WeBWorK mini-assignments: Because the pace of summer courses is so rapid, I have
+designed the grading scheme to make sure that you are doing a small amount of daily
+practice. On each day that we have lecture, I will release a mini-assignment held on
+WeBWorK that will be due at 11:59pm that night. The mini-assignment will be short and
+simple, and exists mostly to ensure that you are comfortable with the basic deﬁnitions of the
+topics that were introduced earlier that day in lecture. I will aim to have it take no longer than
+15 minutes. The mini-assignments will account for 5% of your ﬁnal grade, and the grade will
+be the average of your best 12 of the 16 mini-assignments.
+Email policy: Please ensure that “MATH 222” is in the subject line of your email, and that
+emails are addressed to gavin.barill@mcgill.ca (my work email), and not
+gavin.barill@mail.mcgill.ca (my student email). Email responses can be expected within two
+business days. Any mathematics question should be asked in class, tutorial, or ofﬁce hours —
+not email. A real-time conversation is a much more efﬁcient way to explain math. In addition,
+questions regarding a WeBWorK assignment that are asked less than 24 hours before it is
+due cannot be guaranteed a response before the deadline.
+Regrade requests: Regrade requests regarding WeBWorK and the Midterm will be handled
+in my ofﬁce hours only, not through email. For WeBWorK, please ensure you have double
+checked your work and made sure you entered your answer correctly before asking if the
+WeBWorK is wrong. Midterm regrades must be made within 3 days of when the grades are
+returned to you.
+A note on studying math: It is easy to think that you understand a math concept when
+someone else explains it to you (i.e. in lecture, in tutorial, or while studying with fellow
+students). However, we only discover whether we truly understand a concept when we try to
+use that knowledge in practice. As such, only reading the textbook or reviewing lecture notes
+is not a good way to study for this course. A much better approach is doing as many different
+problems as you can until the concept is familiar to you.
+Math Help Desk: The Math Help Desk is located in Burnside Hall room 911, and is open
+Monday to Friday, noon to 5pm. It is staffed by people who are there to help you, please use it
+in addition to ofﬁce hours.
+Language policy: In accord with McGill University's Charter of Students’ Rights, students in
+this course have the right to submit in English or French any written work that is to be
+graded.
+
+
