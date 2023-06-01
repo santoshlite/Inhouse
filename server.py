@@ -17,7 +17,6 @@ deberta_tokenizer = AutoTokenizer.from_pretrained('navteca/deberta-v3-base-squad
 
 nlp = pipeline('question-answering', model=deberta_model, tokenizer=deberta_tokenizer)
 
-
 app = Flask(__name__)
 
 @app.route("/get_uploaded_count")
