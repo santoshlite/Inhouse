@@ -60,3 +60,71 @@ button:active {
 button:focus {
 	border-color: #666;
 }
+
+.row {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Sets the height to 100% of the viewport height */
+    width: 15vw; /* Adjust the width as needed */
+    background-color: #424242; /* Adjust the background color as needed */
+	overflow-x: hidden;
+  }
+
+.content-container {
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin-left: 15vw; /* Adjust the value to match the width of the fixed element */
+    padding: 20px;
+  }
+
+.searchbar{
+	background: rgba(235, 235, 235, 0.293);
+	box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+	backdrop-filter: blur( 3.5px );
+	-webkit-backdrop-filter: blur( 3.5px );
+	border-radius: 10px;
+	border: 1px solid rgba(220, 220, 220, 0.813)
+}
+
+.wrapper1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .list-container {
+    display: flex;
+    flex-direction: column;
+	width: 14vw;
+  }
+
+  h3 {
+    margin: 15px;
+    color: white;
+    font-size: large;
+    font-weight: bold;
+  }
+
+.history-item {
+    color: white;
+	padding: 10px;
+    font-size: medium;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	border-radius: 5px;
+	
+  }
+
+.history-item:hover{
+	background-color: rgb(81, 81, 81);
+}
