@@ -1,7 +1,9 @@
 html, body {
 	position: relative;
 	width: 100%;
+	margin: 0;
 	height: 100%;
+	background-color: #ffffff;
 }
 
 body {
@@ -10,6 +12,10 @@ body {
 	padding: 8px;
 	box-sizing: border-box;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+textarea:focus, input:focus{
+    outline: none;
 }
 
 a {
@@ -53,78 +59,138 @@ button {
 	outline: none;
 }
 
-button:active {
-	background-color: #ddd;
-}
-
-button:focus {
-	border-color: #666;
-}
-
-.row {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh; /* Sets the height to 100% of the viewport height */
-    width: 15vw; /* Adjust the width as needed */
-    background-color: #424242; /* Adjust the background color as needed */
-	overflow-x: hidden;
-  }
-
-.content-container {
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin-left: 15vw; /* Adjust the value to match the width of the fixed element */
-    padding: 20px;
-  }
-
-.searchbar{
-	background: rgba(235, 235, 235, 0.293);
-	box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-	backdrop-filter: blur( 3.5px );
-	-webkit-backdrop-filter: blur( 3.5px );
-	border-radius: 10px;
-	border: 1px solid rgba(220, 220, 220, 0.813)
-}
-
-.wrapper1 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
 
 .wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
   }
-
-  .list-container {
-    display: flex;
-    flex-direction: column;
-	width: 14vw;
-  }
-
-  h3 {
-    margin: 15px;
-    color: white;
-    font-size: large;
-    font-weight: bold;
-  }
-
-.history-item {
-    color: white;
-	padding: 10px;
-    font-size: medium;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-	border-radius: 5px;
+  
+.list-container {
+	display: flex;
+	flex-direction: column;
+	width: 14.5vw;
+	align-items: center;
 	
   }
+  
 
-.history-item:hover{
-	background-color: rgb(81, 81, 81);
-}
+.title {
+	margin: 10px;
+	margin-top: 25px;
+	color: #525761;
+	font-size: large;
+	font-weight: 700;
+  }
+
+
+.history-item {
+	display:inline-block;
+	align-items: center;
+	color: #525761;
+	padding: 10px;
+	white-space: nowrap;
+	border-radius: 5px;
+	font-size: 14.5px;
+	transition: background-color 0.05s ease;
+	width: 100%; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.history-item:hover {
+	background-color: rgb(108, 167, 255);
+  }
+  
+.row-bar {
+	position: fixed;
+	top: 0;
+	left: 17vw; /* Adjust the value to match the width of the row-bar */
+	height: 100vh;
+	width: calc(100% - 17vw); /* Subtract the width of the row-bar from the total width */
+	overflow-x: hidden;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+  }
+  
+.row {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100vh;
+	width: 17vw;
+	background-color: #f5f6fb;
+	overflow-x: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	z-index: 1; 
+	border: 1px solid rgb(205, 205, 205);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+
+
+  .top-bar h1 {
+	margin: 0;
+	font-size: xx-large;
+	color: #525761;
+  }
+  
+  .top-bar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 10px;
+	background-color: #f3f6ff;
+	width: 100%;
+	border: 1px solid rgb(205, 205, 205);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .search-container {
+	margin-top: 10px;
+	display: flex;
+	align-items: center;
+  }
+  
+  .input-container {
+	display: flex;
+	align-items: center;
+	position: relative;
+  }
+  
+  .searchbar {
+	padding: 12px;
+	margin: 10px;
+	width: 40vw;
+	background: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+	backdrop-filter: blur(1.5px);
+	-webkit-backdrop-filter: blur(1.5px);
+	border-radius: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .submit-button {
+	padding: 10px;
+	border-radius: 2px;
+	border: none;
+	background-color: transparent;
+	color: #333;
+	outline: none;
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+  }
+  
+  
+  .custom-i {
+	margin-top: 10px;
+	color: #525761;
+	font-size: small;
+	font-weight: 600;
+  }
+  
