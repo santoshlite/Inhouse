@@ -42,7 +42,7 @@ def get_uploaded_files():
         if os.path.isfile(file_path):
             uploaded_files.append(filename)
 
-    return 
+    return uploaded_files
 
 def update_mongo_record(fileName, text):
     client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
@@ -58,6 +58,32 @@ def update_mongo_record(fileName, text):
     uploadFiles = db.uploadFiles
 
     uploadFiles.insert_one(uploadFile)
+
+    client.close()
+
+    pass
+
+def record_history(query, response):
+
+    client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
+
+    db = client["myDatabase"]
+    
+    # Append the query-response into the history database
+    pastRecord = {
+        "Query":  query,
+        "Response": response
+    }
+    
+    # Check if history is already created inside the database
+    collist = db.list_collection_names()
+    if "history" not in collist:
+        history = db.create_collection("history", capped = True, size = 5242880, max = 20 )
+
+    else:
+        history = db.history
+
+    history.insert_one(pastRecord)
 
     client.close()
 
@@ -139,6 +165,9 @@ def search():
     output = clean_res(out)
     
     response = {"result": output}
+
+    record_history(query, response)
+
     print(response)
     return response
 
