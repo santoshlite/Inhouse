@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import History from './lib/History.svelte'
+  import History from './lib/History.svelte';
 
   let inputValue = "";
   let responseValue = "";
@@ -15,10 +15,10 @@
   async function fetchData() {
     const count = await getUploadedItems();
     if(count === "1" || count === "0" ){
-      indexedInfo = count + " item indexed";
+      indexedInfo = count + " file indexed";
       return
     }
-    indexedInfo = count + " items indexed.";
+    indexedInfo = count + " files indexed.";
   }
 
   async function sendData() {
@@ -88,20 +88,23 @@
   <History />
 </div>
 
-<div class="wrapper1">
-  <div class="content-container">
-    <h1>inhouse 🏠</h1>
-    <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue}/>
-    <button on:click={sendData}>Submit</button>
+    <div class="row-bar">
+      <div class="top-bar">
+        <h1>inhouse 🏠</h1>
+        <div class="search-container">
+          <div class="input-container">
+            <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue}/>
+            <button class="submit-button" on:click={sendData}>🔍</button>
+          </div>
+        </div>
+        <p class="custom-i">{indexedInfo}</p>
+      </div>
 
-    <i class="custom-i"> {indexedInfo}</i>
-
-    <p>{responseValue}</p>
-
-    <h4>Upload new files</h4>
-    <form onsubmit="return false" enctype="multipart/form-data">
-      <input type="file" on:change={handleFileChange}  multiple/>
-    </form>
-    <p>{message}</p>
-  </div>
-</div>
+      <p>{responseValue}</p>
+      <h4>Upload new files</h4>
+      <form onsubmit="return false" enctype="multipart/form-data">
+        <input type="file" on:change={handleFileChange}  multiple/>
+      </form>
+      <p>{message}</p>
+    </div>
+    
