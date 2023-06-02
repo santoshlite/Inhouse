@@ -1,11 +1,17 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, setContext } from 'svelte';
   import History from './lib/History.svelte';
+
+  /*
+  // Create a reactive variable for historic questions
+  import { writable } from 'svelte/store'; 
+  const historicQuestions = writable([]);
+  */
 
   let inputValue = "";
   let responseValue = "";
   let indexedInfo = "";
-
+  
   async function getUploadedItems() {
     const response = await fetch("./get_uploaded_count");
     const data = await response.text();
@@ -38,6 +44,15 @@
     });
     const data = await response.json();
     responseValue = data.result;
+
+    /*
+    // Fetch the updated list of historic questions from the database
+    const updatedQuestions = await fetchHistoricQuestions();
+
+    // Update the reactive variable with the updated list of questions
+    historicQuestions.set(updatedQuestions);
+
+    */
   }
 
   let fileInput;
@@ -78,11 +93,48 @@
     uploadFile();
   }
 
+  /*
+  async function fetchHistoricQuestions() {
+      // Fetch the historic questions from the database using the appropriate method
+      // Return the list of questions
+      const response = await fetch("./get_history");
+
+		  return response
+  }
+  */
+
   onMount(() => {
     fetchData();
   });
 
+  // Fetch the initial list of historic questions
+  /*
+  onMount(async () => {
+    const questions = await fetchHistoricQuestions();
+    historicQuestions.set(questions);
+  });
+  */
+
+  // Pass down the submitQuestion function and historicQuestions variable to child components
+  //setContext('submitQuestion', submitQuestion);
+  //setContext('historicQuestions', historicQuestions);
+
 </script>  
+
+
+
+
+<!-- Render the child component -->
+
+
+ <!-- 
+  <History bind:fetchHistoricRecord={historyFunc} /> 
+  --> 
+
+
+
+
+
 
 <div class="row">
   <History />
@@ -95,6 +147,22 @@
           <div class="input-container">
             <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue}/>
             <button class="submit-button" on:click={sendData}>🔍</button>
+            
+            
+            
+            
+            <!-- 
+            
+              Something that can be added to the buttons above!!!!!
+
+              on:click={historyFunc.fetchHistoricRecord()} 
+            
+            -->
+
+
+
+
+
           </div>
         </div>
         <p class="custom-i">{indexedInfo}</p>

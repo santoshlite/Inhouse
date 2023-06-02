@@ -21,6 +21,7 @@ app = Flask(__name__)
 
 @app.route("/get_uploaded_count")
 def get_uploaded_count():
+    print("here")
     upload_folder = app.config['UPLOAD_FOLDER']
     uploaded_files = []
 
@@ -201,5 +202,29 @@ def upload_file():
 
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
+@app.route("/get_history")
+def get_historic_post():
+    print("there")
+    client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
+    
+    db = client["myDatabase"]
+
+    # Check if there is a history, if there isn't => no point in getting the list (and avoid creating an uncapped history collection)
+    collist = db.list_collection_names()
+
+    if "history" in collist:
+        history = db.history
+
+        # Initialize an empty list
+        temporary_history_list = history.distinct("Query")
+
+    print(temporary_history_list)
+
+    client.close()
+
+    return json.dumps(temporary_history_list)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
+    

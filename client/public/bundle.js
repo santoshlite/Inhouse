@@ -96,6 +96,19 @@ var app = (function () {
     function onMount(fn) {
         get_current_component().$$.on_mount.push(fn);
     }
+    /**
+     * Associates an arbitrary `context` object with the current component and the specified `key`
+     * and returns that object. The context is then available to children of the component
+     * (including slotted content) with `getContext`.
+     *
+     * Like lifecycle functions, this must be called during component initialisation.
+     *
+     * https://svelte.dev/docs#run-time-svelte-setcontext
+     */
+    function setContext(key, context) {
+        get_current_component().$$.context.set(key, context);
+        return context;
+    }
 
     const dirty_components = [];
     const binding_callbacks = [];
@@ -455,25 +468,22 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (11:6) {#each dummyList as item}
+    // (41:4) {#each dummyList as item}
     function create_each_block(ctx) {
     	let div;
-    	let t0;
-    	let t1_value = /*item*/ ctx[2] + "";
-    	let t1;
+    	let t_value = /*item*/ ctx[2] + "";
+    	let t;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			t0 = text("📄   ");
-    			t1 = text(t1_value);
+    			t = text(t_value);
     			attr_dev(div, "class", "history-item");
-    			add_location(div, file$1, 11, 8, 352);
+    			add_location(div, file$1, 41, 6, 871);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
-    			append_dev(div, t0);
-    			append_dev(div, t1);
+    			append_dev(div, t);
     		},
     		p: noop,
     		d: function destroy(detaching) {
@@ -485,7 +495,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(11:6) {#each dummyList as item}",
+    		source: "(41:4) {#each dummyList as item}",
     		ctx
     	});
 
@@ -493,10 +503,10 @@ var app = (function () {
     }
 
     function create_fragment$1(ctx) {
-    	let div2;
-    	let div0;
-    	let t1;
     	let div1;
+    	let h3;
+    	let t1;
+    	let div0;
     	let each_value = /*dummyList*/ ctx[1];
     	validate_each_argument(each_value);
     	let each_blocks = [];
@@ -507,35 +517,34 @@ var app = (function () {
 
     	const block = {
     		c: function create() {
-    			div2 = element("div");
-    			div0 = element("div");
-    			div0.textContent = `${/*history*/ ctx[0]}`;
-    			t1 = space();
     			div1 = element("div");
+    			h3 = element("h3");
+    			h3.textContent = `${/*history*/ ctx[0]}`;
+    			t1 = space();
+    			div0 = element("div");
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
 
-    			attr_dev(div0, "class", "title");
-    			add_location(div0, file$1, 8, 2, 244);
-    			attr_dev(div1, "class", "list-container");
-    			add_location(div1, file$1, 9, 4, 283);
-    			attr_dev(div2, "class", "wrapper");
-    			add_location(div2, file$1, 7, 0, 220);
+    			add_location(h3, file$1, 37, 2, 784);
+    			attr_dev(div0, "class", "list-container");
+    			add_location(div0, file$1, 39, 2, 806);
+    			attr_dev(div1, "class", "wrapper");
+    			add_location(div1, file$1, 36, 0, 760);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div2, anchor);
-    			append_dev(div2, div0);
-    			append_dev(div2, t1);
-    			append_dev(div2, div1);
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, h3);
+    			append_dev(div1, t1);
+    			append_dev(div1, div0);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				if (each_blocks[i]) {
-    					each_blocks[i].m(div1, null);
+    					each_blocks[i].m(div0, null);
     				}
     			}
     		},
@@ -553,7 +562,7 @@ var app = (function () {
     					} else {
     						each_blocks[i] = create_each_block(child_ctx);
     						each_blocks[i].c();
-    						each_blocks[i].m(div1, null);
+    						each_blocks[i].m(div0, null);
     					}
     				}
 
@@ -567,7 +576,7 @@ var app = (function () {
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div2);
+    			if (detaching) detach_dev(div1);
     			destroy_each(each_blocks, detaching);
     		}
     	};
@@ -696,33 +705,33 @@ var app = (function () {
     			p2 = element("p");
     			t13 = text(/*message*/ ctx[3]);
     			attr_dev(div0, "class", "row");
-    			add_location(div0, file, 86, 0, 2055);
-    			add_location(h1, file, 92, 8, 2157);
+    			add_location(div0, file, 138, 0, 3240);
+    			add_location(h1, file, 144, 8, 3342);
     			attr_dev(input0, "placeholder", "Ask a question.");
     			attr_dev(input0, "class", "searchbar");
     			attr_dev(input0, "type", "text");
-    			add_location(input0, file, 95, 12, 2268);
+    			add_location(input0, file, 147, 12, 3453);
     			attr_dev(button, "class", "submit-button");
-    			add_location(button, file, 96, 12, 2373);
+    			add_location(button, file, 148, 12, 3558);
     			attr_dev(div1, "class", "input-container");
-    			add_location(div1, file, 94, 10, 2226);
+    			add_location(div1, file, 146, 10, 3411);
     			attr_dev(div2, "class", "search-container");
-    			add_location(div2, file, 93, 8, 2185);
+    			add_location(div2, file, 145, 8, 3370);
     			attr_dev(p0, "class", "custom-i");
-    			add_location(p0, file, 99, 8, 2475);
+    			add_location(p0, file, 167, 8, 3906);
     			attr_dev(div3, "class", "top-bar");
-    			add_location(div3, file, 91, 6, 2127);
-    			add_location(p1, file, 102, 6, 2533);
-    			add_location(h4, file, 103, 6, 2562);
+    			add_location(div3, file, 143, 6, 3312);
+    			add_location(p1, file, 170, 6, 3964);
+    			add_location(h4, file, 171, 6, 3993);
     			attr_dev(input1, "type", "file");
     			input1.multiple = true;
-    			add_location(input1, file, 105, 8, 2663);
+    			add_location(input1, file, 173, 8, 4094);
     			attr_dev(form, "onsubmit", "return false");
     			attr_dev(form, "enctype", "multipart/form-data");
-    			add_location(form, file, 104, 6, 2594);
-    			add_location(p2, file, 107, 6, 2743);
+    			add_location(form, file, 172, 6, 4025);
+    			add_location(p2, file, 175, 6, 4174);
     			attr_dev(div4, "class", "row-bar");
-    			add_location(div4, file, 90, 4, 2099);
+    			add_location(div4, file, 142, 4, 3284);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -846,7 +855,14 @@ var app = (function () {
 
     		const data = await response.json();
     		$$invalidate(1, responseValue = data.result);
-    	}
+    	} /*
+    // Fetch the updated list of historic questions from the database
+    const updatedQuestions = await fetchHistoricQuestions();
+
+    // Update the reactive variable with the updated list of questions
+    historicQuestions.set(updatedQuestions);
+
+    */
 
     	let fileInput;
     	let message = "";
@@ -883,6 +899,15 @@ var app = (function () {
     		uploadFile();
     	}
 
+    	/*
+    async function fetchHistoricQuestions() {
+        // Fetch the historic questions from the database using the appropriate method
+        // Return the list of questions
+        const response = await fetch("./get_history");
+
+    		  return response
+    }
+    */
     	onMount(() => {
     		fetchData();
     	});
@@ -900,6 +925,7 @@ var app = (function () {
 
     	$$self.$capture_state = () => ({
     		onMount,
+    		setContext,
     		History,
     		inputValue,
     		responseValue,
