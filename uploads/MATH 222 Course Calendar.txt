@@ -1,0 +1,185 @@
+Mon May 1
+
+Tues May 2
+
+Lecture 1:
+Introduction
+Power series (11.8)
+Representations of power series
+(11.9)
+
+Lecture 2:
+Taylor Series (11.10)
+Applications of Taylor series
+(11.11)
+
+Mon May 8
+
+Tues May 9
+
+Lecture 5:
+Arc Length and Curvature (13.3)
+
+Lecture 6:
+Motion in Space: Velocity and
+Acceleration (13.4) (maybe
+brieﬂy)
+Polar Coordinates (10.3 & 10.4)
+
+Mon May 15
+
+Tues May 16
+
+Wed May 17
+
+Thurs May 18
+
+Lecture 10:
+The Chain Rule (14.5)
+Directional Derivative and the
+Gradient Vector (14.6)
+
+Lecture 11:
+Minimum and Maximum Values (14.7)
+(Possible additional topic: 2nd order
+approximations)
+
+Lecture 12:
+Minimum and Maximum Values
+(14.7)
+(Possible additional topic: 2nd
+order approximations)
+
+Tues May 23
+
+Wed May 24
+
+Thurs May 25
+
+Lecture 13:
+Double Integrals over
+Rectangles (15.1)
+Double Integrals over General
+Regions (15.2)
+
+Lecture 14:
+Double Integrals in Polar Coordinates
+(15.3)
+Applications of Double Integrals (15.4)
+Surface Area (15.5) (possibly)
+
+Tues May 30
+
+Wed May 31
+
+Lecture 9:
+Partial Derivatives (14.3)
+Tangent Planes and Linear
+Approximations (14.4)
+Midterm:
+Lectures 1 - 8
+Mon May 22
+Victoria Day, No classes.
+
+Mon May 29
+Lecture 16:
+Triple Integrals in Spherical
+Coordinates (15.8)
+Change of Variables in Multiple
+Integrals (15.9)
+
+Webwork 4:
+Lectures 13 - 16
+
+Wed May 3
+Lecture 3:
+Vectors and Geometry (12.1)
+Vectors (12.2)
+The Dot Product (12.3)
+The Cross Product (12.4)
+Equations of Lines and Planes (12.5)
+Wed May 10
+Lecture 7:
+Functions of Several Variables (14.1)
+
+Final exam?
+
+Thurs May 4
+Lecture 4:
+Vector Functions and Space
+Curves (13.1)
+Derivatives and Integrals of
+Vector functions (13.2)
+
+Thurs May 11
+Lecture 8:
+Limits and Continuity (14.2)
+
+Sunday May 7
+Webwork 1:
+Lectures 1 - 4
+
+Sunday May 14
+Webwork 2:
+Lectures 5 - 8
+
+Sunday May 21
+Webwork 3:
+Lectures 9 - 12
+
+Sunday May 28
+
+Lecture 15:
+Triple Integrals (15.6)
+Triple Integrals in Cylindrical
+Coordinates (15.7)
+
+Thurs June 1
+Final exam?
+
+Fri June 2
+
+Topics:
+Taylor series:
+Power series (11.8)
+Representations of power series (11.9)
+Taylor series (11.10)
+Applications of Taylor series (Steward 11.11) (Including limits!)
+Review of Vector Geometry
+Three-Dimensional Coordinate System (12.1)
+Vectors (12.2)
+The Dot Product (12.3)
+
+The Cross Product (12.4)
+Equations of Lines and Planes (12.5)
+Cylinders and Quadratic Surfaces (12.6) - Maybe…
+Vector Valued Functions
+Vector Functions and Space Curves (13.1)
+Derivatives and Integrals of Vector functions (13.2)
+Arc Length and Curvature (13.3)
+Motion in Space: Velocity and Acceleration (13.4) (maybe brieﬂy)
+Polar Coordinates (10.3)
+Areas and Lengths in Polar Coordinates (10.4)
+Conic Sections (10.5) Maybe, likely to cut
+Multivariate Functions
+Functions of Several Variables (14.1) (Needs a whole day)
+Limits and Continuity (14.2)
+Partial Derivatives (14.3)
+Tangent Planes and Linear Approximations (14.4)
+The Chain Rule (14.5)
+Directional Derivative and the Gradient Vector (14.6)
+Minimum and Maximum Values (14.7)
+Lagrange Multipliers (14.8)
+Multiple Integrals
+Double Integrals over Rectangles (15.1)
+Double Integrals over General Regions (15.2)
+Double Integrals in Polar Coordinates (15.3)
+Applications of Double Integrals (15.4) Most likely cut
+
+Surface Area (15.5)
+Triple Integrals (15.6)
+Triple Integrals in Cylindrical Coordinates (15.7)
+Triple Integrals in Spherical Coordinates (15.8)
+Change of Variables in Multiple Integrals (15.9)
+
+

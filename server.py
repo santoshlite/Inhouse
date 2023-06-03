@@ -6,6 +6,7 @@ from pymongo import MongoClient
 import json
 import textract
 import os
+import asyncio
 
 
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
@@ -174,15 +175,13 @@ def search():
 
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-@app.route('/upload_file', methods=['POST'])
-def upload_file():
-    files = request.files.getlist('files[]')
-    uploaded_files = []
-    for file in files:
+async def upload_single_file(file):
+
+        print("===================================== STEP 1: ENTERED UPLOAD SINGLE FILE! ===================================")
         filename = file.filename
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-        uploaded_files.append(filename)
+        
         text = textract.process("uploads/" + filename).decode('utf-8')
 
         name, extension = os.path.splitext(filename)
@@ -197,10 +196,37 @@ def upload_file():
         os.remove("uploads/" + filename)
 
         update_mongo_record(filename, text)
+        print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
 
-        print("Done!")
+async def upload_multiple_file():
+    files = request.files.getlist('files[]')
 
+    for file in files:
+        asyncio.ensure_future(upload_single_file(file))
+    
+    print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
+    
+    
+
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
+    files = request.files.getlist('files[]')
+    uploaded_files = []
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(upload_multiple_file())
+    loop.close()
+
+    for file in files:
+        filename = file.filename
+        uploaded_files.append(filename)
+
+    print("===================================== STEP 5: FINAL STAGE ===================================")
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
+
+
 
 @app.route("/get_history")
 def get_historic_post():
