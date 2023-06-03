@@ -1,35 +1,57 @@
 <script>
   import { onMount } from 'svelte';
   import History from './lib/History.svelte';
-
   let inputValue = "";
   let responseValue = "";
   let indexedInfo = "";
+  let token = "";
+
+  let historylist = [];
+
+  async function getHistoryList() {
+    const response = await fetch(`/app/get_history_list/${token}`);
+    const data = await response.json();
+
+    if (response.ok) {
+      historylist = data.queries;
+    } else {
+      historylist = ["Could not load history"];
+    }
+  }
+
+  async function getTokenFromUrl() {
+    const path = window.location.pathname;
+    const parts = path.split("/");
+    const lastPart = parts[parts.length - 1];
+    token = lastPart;
+  }
 
   async function getUploadedItems() {
-    const response = await fetch("./get_uploaded_count");
+    const response = await fetch(`./get_uploaded_count/${token}`);
     const data = await response.text();
     return data;
   }
 
   async function fetchData() {
     const count = await getUploadedItems();
-    if(count === "1" || count === "0" ){
+    if (count === "0") {
+      indexedInfo = "Upload files to get started!";
+      return;
+    } else if (count === "1") {
       indexedInfo = count + " file indexed";
-      return
+      return;
     }
     indexedInfo = count + " files indexed.";
   }
 
-  async function sendData() {
+  async function search() {
     if (inputValue === "") {
       responseValue = "No text :(";
-      return
+      return;
     }
-
     responseValue = "Loading...";
 
-    const response = await fetch('/search', {
+    const response = await fetch(`./search/${token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -38,13 +60,13 @@
     });
     const data = await response.json();
     responseValue = data.result;
+    await getHistoryList();
   }
 
   let fileInput;
-  let message = ""
 
   async function uploadFile() {
-    message = "Uploading..."
+    indexedInfo = "Uploading...";
 
     const formData = new FormData();
 
@@ -58,19 +80,25 @@
       }
       formData.append('files[]', fileInput.files[i]);
     }
-    const response = await fetch('/upload_file', {
+
+    const response = await fetch(`./upload_file/${token}`, {
       method: 'POST',
       body: formData
     });
-    
+
     if (unsupportedFiles.length > 0) {
-    const warningMessage = `Could not upload the following files. Image type files are not allowed: ${unsupportedFiles.join(', ')}`;
-    alert(warningMessage);
-  }
+      const warningMessage = `Could not upload the following files. Image type files are not allowed: ${unsupportedFiles.join(', ')}`;
+      alert(warningMessage);
+    }
 
     const data = await response.json();
-    message = data.Message;
     fetchData();
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      search();
+    }
   }
 
   function handleFileChange(event) {
@@ -78,14 +106,17 @@
     uploadFile();
   }
 
-  onMount(() => {
-    fetchData();
+
+  onMount(async () => {
+    await getTokenFromUrl();
+    await fetchData();
+    await getHistoryList();
   });
 
-</script>  
+</script>
 
 <div class="row">
-  <History />
+      <History historyList={historylist} />
 </div>
 
     <div class="row-bar">
@@ -93,18 +124,20 @@
         <h1>inhouse 🏠</h1>
         <div class="search-container">
           <div class="input-container">
-            <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue}/>
-            <button class="submit-button" on:click={sendData}>🔍</button>
+            <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue} on:keydown={handleKeyDown}/>
+            <button class="submit-button" on:click={search}>🔍</button>
+          </div>
+          <div class="upload-button-container">
+            <label for="fileInput" class="upload-button">
+              📥  &thinsp; Upload
+              <input id="fileInput" type="file" style="display:none" on:change={handleFileChange} multiple />
+            </label>
           </div>
         </div>
         <p class="custom-i">{indexedInfo}</p>
       </div>
 
       <p>{responseValue}</p>
-      <h4>Upload new files</h4>
-      <form onsubmit="return false" enctype="multipart/form-data">
-        <input type="file" on:change={handleFileChange}  multiple/>
-      </form>
-      <p>{message}</p>
+
     </div>
     
