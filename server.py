@@ -27,6 +27,17 @@ db_history = client["userHistory"]
 # setting the collection for authentification
 token_email_collection = db["token_email_mapping"]
 
+
+# setting up the url mapping table to use later on in redirecting user to appropriate sites
+# this is a dictionary 
+#   => keys are the url
+#   => values are the directory names
+URL_MAPPING = {
+    '/': '/',
+    '/app': '/app',
+    '/auth': '/auth',
+}
+
 @app.route("/")
 def base():
     return send_from_directory('client/public', 'frontpage.html')
@@ -39,9 +50,32 @@ def svelte_app(token):
     else:
         return "Invalid token or expired."
 
+
+# method returns the closest matching directory
+def determine_closest_directory():
+    requested_url = request.path
+    closest_directory = None
+    closest_distance = float('inf')
+
+    for url_pattern, directory in URL_MAPPING.items():
+        if url_pattern in requested_url:
+            distance = len(requested_url) - len(url_pattern)
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_directory = directory
+
+    print(closest_directory)
+    return closest_directory
+
+
 @app.errorhandler(404)
-def not_found_error(error):
-    return send_from_directory('client/public', '404.html'), 404
+def page_not_found(e):
+    closest_directory = determine_closest_directory()
+    if closest_directory:
+        return redirect(closest_directory)
+    else:
+        return render_template('404.html'), 404
+
 
 
 @app.route("/auth")
