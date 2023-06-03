@@ -1,15 +1,24 @@
 
 <script>
-    let history = "History";
-    let dummyList = ["How many invoices do I have?", "Who are my biggest competitors?", "What does my insurance protect me against?", "When is my next payment due?"];
-  </script>
+  export let historyList = [];
+
+  function hasItems(list) {
+    return list && list.length > 0;
+  }
+  
+</script>
 
 
 <div class="wrapper">
-  <div class="title">{history}</div>
+  <div class="title">History</div>
+
+  {#if hasItems(historyList)}
     <div class="list-container">
-      {#each dummyList as item}
+      {#each historyList as item}
         <div class="history-item">📄 &nbsp; {item}</div>
       {/each}
     </div>
-  </div>
+  {:else}
+    <div class="empty-message">It's quiet here...</div>
+  {/if}
+</div>
