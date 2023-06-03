@@ -14,6 +14,7 @@ body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
+
 textarea:focus, input:focus{
     outline: none;
 }
@@ -71,7 +72,6 @@ button {
 	flex-direction: column;
 	width: 14.5vw;
 	align-items: center;
-	
   }
   
 
@@ -99,7 +99,7 @@ button {
   }
 
 .history-item:hover {
-	background-color: rgb(108, 167, 255);
+	background-color: rgb(195, 219, 255);
   }
   
 .row-bar {
@@ -128,6 +128,7 @@ button {
 	z-index: 1; 
 	border: 1px solid rgb(205, 205, 205);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	overflow-y: scroll;
   }
 
 
@@ -141,24 +142,43 @@ button {
   .top-bar {
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between; 
 	align-items: center;
-	padding: 10px;
+	padding: 15px;
 	background-color: #f3f6ff;
 	width: 100%;
 	border: 1px solid rgb(205, 205, 205);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	position: relative; /* Added */
   }
   
+  .loading-bar {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 4px;
+	width: 0;
+	background-color: #4a90e2;
+	transition: width 0.3s ease; /* Added */
+  }
+  
+  .loading-bar.loading {
+	width: 100%;
+  }
+  
+
   .search-container {
 	margin-top: 10px;
 	display: flex;
 	align-items: center;
+	flex-grow: 1; /* Add this line */
   }
   
   .input-container {
 	display: flex;
 	align-items: center;
 	position: relative;
+	flex-grow: 1; /* Add this line */
   }
   
   .searchbar {
@@ -194,3 +214,118 @@ button {
 	font-weight: 600;
   }
   
+.empty-message{
+	margin-top: 30vh;
+	text-align: center;
+	color: #525761;
+	font-size: small;
+	font-size: 14.5px;
+}
+
+.upload-button-container {
+	background: linear-gradient(
+	  0deg,
+	  rgba(0, 85, 255, 1) 0%,
+	  rgba(97, 154, 255, 1) 100%
+	);
+	border-radius: 10px;
+	padding: 12px;
+	border-radius: 10px;
+	transition: background-color 0.3s, transform 0.3s; /* Add transform transition */
+  }
+
+.upload-button-container label {
+	display: flex;
+	align-items: center;
+	color: white;
+	font-size: 14.5px; /* Change the font size to your desired value */
+	font-weight: 700;
+  }
+  
+.upload-button-container:hover {
+	background: linear-gradient(
+	  0deg,
+	  rgb(0, 68, 203) 0%,
+	  rgb(69, 137, 254) 100%
+	);
+	transform: scale(1.05); /* Add scaling effect */
+  }
+
+.wrapper-form{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.form{
+	display: flex;
+	flex-direction: column;
+	width: 20vw;
+}
+
+.welcome{
+	margin-top: 10vh;
+	text-align: center;
+	color: #525761;
+	font-size: small;
+	font-size: xx-large;
+}
+
+.subtext{
+	text-align: center;
+	color: #525761;
+	font-size: small;
+	font-size: 15px;
+}
+
+.input-auth{
+	border-radius: 10px;
+	border: 1px solid rgb(199, 199, 199);
+	padding: 10px;
+	border: 1px solid rgb(214, 214, 214);
+}
+
+.form button {
+	background: linear-gradient(
+	  0deg,
+	  rgba(0, 85, 255, 1) 0%,
+	  rgba(97, 154, 255, 1) 100%
+	);
+	border-radius: 10px;
+	padding: 12px;
+	border-radius: 10px;
+	transition: background-color 0.3s, transform 0.3s; 
+	color: white;
+	font-weight: 600;
+  }
+  
+.form button:hover {
+	background: linear-gradient(
+	  0deg,
+	  rgb(0, 68, 203) 0%,
+	  rgb(69, 137, 254) 100%
+	);
+	transform: scale(1.01); /* Add scaling effect */
+  }
+
+#auth{
+	background-color: #f3f6ff;
+}
+
+.error-message {
+	color: #ff5353;
+	font-size: medium;
+	font-weight: 600;
+}
+
+.wrapper-error{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.error{
+	font-size: xxx-large;
+	color: #4e4e4e;
+	font-weight: 800;
+}
