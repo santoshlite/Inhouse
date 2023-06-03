@@ -1,158 +1,196 @@
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify, redirect, render_template, session
 from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 from sentence_transformers import SentenceTransformer, util
-from threading import Thread
-from pymongo import MongoClient
-import json
+import asyncio
+import pymongo
+from pymongo.mongo_client import MongoClient
+import certifi
+import secrets
 import textract
 import os
 
-
+# Passage ranking model
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
-
-# Load model & tokenizer
-deberta_model = AutoModelForQuestionAnswering.from_pretrained('navteca/deberta-v3-base-squad2')
-deberta_tokenizer = AutoTokenizer.from_pretrained('navteca/deberta-v3-base-squad2')
-
-nlp = pipeline('question-answering', model=deberta_model, tokenizer=deberta_tokenizer)
-
 
 app = Flask(__name__)
 
-@app.route("/get_uploaded_count")
-def get_uploaded_count():
-    upload_folder = app.config['UPLOAD_FOLDER']
-    uploaded_files = []
+app.config['UPLOAD_FOLDER'] = 'uploads'
 
-    # Iterate over the files in the upload folder
-    for filename in os.listdir(upload_folder):
-        file_path = os.path.join(upload_folder, filename)
-        if os.path.isfile(file_path) and filename.endswith('.txt'):
-            uploaded_files.append(filename)
-    return str(len(uploaded_files))
+# setting the mongodb client
+uri = "mongodb+srv://inhouse:passwordinhouse@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
+client = MongoClient(uri, tlsCAFile=certifi.where())
 
+# setting the 2 databases
+db = client["userDocuments"]
+db_history = client["userHistory"]
 
-def get_uploaded_files():
-    upload_folder = app.config['UPLOAD_FOLDER']
-    uploaded_files = []
-
-    # Iterate over the files in the upload folder
-    for filename in os.listdir(upload_folder):
-        file_path = os.path.join(upload_folder, filename)
-        if os.path.isfile(file_path):
-            uploaded_files.append(filename)
-
-    return 
-
-def update_mongo_record(fileName, text):
-    client = MongoClient(username="rootuser", password="rootpass") #Future todo => for deploy, add ip address in here
-
-    db = client["myDatabase"]
-
-    uploadFile = {
-      "FileName": fileName,
-      "Content": text
-    }
-
-    #Search for a collection called 'uploadFiles' under db database (create one if none is found)
-    uploadFiles = db.uploadFiles
-
-    uploadFiles.insert_one(uploadFile)
-
-    client.close()
-
-    pass
-
-def clean_res(res):
-    text = res['answer']
-
-    # Remove leading and trailing whitespace
-    text = text.strip()
-
-    # Capitalize the first letter
-    text = text.capitalize()
-
-    # Add a period at the end if it's not already there
-    if not text.endswith("."):
-        text += "."
-
-    return text
-
-@app.route("/app")
-def svelte_app():
-    return send_from_directory('client/public', 'index.html')
+# setting the collection for authentification
+token_email_collection = db["token_email_mapping"]
 
 @app.route("/")
 def base():
     return send_from_directory('client/public', 'frontpage.html')
 
-# Path for all the static files (compiled JS/CSS, etc.)
+@app.route("/app/<token>")
+def svelte_app(token):
+    email = get_email_from_token(token)
+    if email:
+        return send_from_directory('client/public', 'index.html')
+    else:
+        return "Invalid token or expired."
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return send_from_directory('client/public', '404.html'), 404
+
+
+@app.route("/auth")
+def auth():
+    return send_from_directory('client/public', 'auth.html')
+
 @app.route("/<path:path>")
 def home(path):
     return send_from_directory('client/public', path)
 
+# generate a token for each new user
+def generate_token():
+    token = secrets.token_urlsafe(16)
+    return token
 
-@app.route('/search', methods=['POST'])
-def search():    
-    data = request.json
-    query = data['value']
-    directory = 'uploads'
+# insert into out token_email_mapping collection a new user (token, email, password)
+def associate_email_with_token(token, email, password):
+    token_email_collection.insert_one({"token": token, "email": email, "password": password})
 
-    docs = []          
-
-    for filename in os.listdir(directory):
-            if filename.endswith('.txt'):  # Check if the file is a text file
-                file_path = os.path.join(directory, filename)
-                with open(file_path, 'r') as file:
-                    content = file.read()
-                    docs.append(content)
+# retrieve the email from the token in our token_email_mapping collection
+def get_email_from_token(token):
+    result = token_email_collection.find_one({"token": token})
+    if result:
+        return result["email"]
+    else:
+        return None
     
-    if len(docs) == 0:
-        return jsonify({'result': 'You need to upload files first!'})
+# retrieve the token from the email in our token_email_mapping collection
+def get_token_from_email(email):
+    document = token_email_collection.find_one({'email': email})
+    if document:
+        return document["token"]
+    return None
+
+# retrieve the password from the email in our token_email_mapping collection
+def get_password_from_email(email):
+    document = token_email_collection.find_one({'email': email})
+    if document:
+        return document["password"]
+    return None
+
+# authenticate the user or create a new user
+@app.route("/login", methods=['POST'])
+def login():
+
+    # retrieve the email and password from the form
+    email = request.form['email']
+    password = request.form['password']
+
+    # check if the user already exists
+    existing_token = get_token_from_email(email)
+    existing_password = get_password_from_email(email)
+
+    # if the user exists and the password is correct, redirect to the app
+    if existing_token and existing_password == password:
+        token = existing_token
+        return redirect(f"/app/{token}")
     
-    #Encode query and documents
-    query_emb = model.encode(query)
-    doc_emb = model.encode(docs)
+    # if the user exists but the password is incorrect, redirect to the auth page
+    elif existing_token and existing_password != password:
+        return redirect("/auth?error=wrong_password")
 
-    #Compute dot score between query and all document embeddings
-    scores = util.dot_score(query_emb, doc_emb)[0].cpu().tolist()
+    # if the user does not exist, create a new user and token, store its password
+    else:
+        token = generate_token()
+        associate_email_with_token(token, email, password)
 
-    #Combine docs & scores
-    doc_score_pairs = list(zip(docs, scores))
+    return redirect(f"/app/{token}")
 
-    #Sort by decreasing score
-    doc_score_pairs = sorted(doc_score_pairs, key=lambda x: x[1], reverse=True)
+# get the number of files uploaded by the user -> to display under search bar
+@app.route("/app/get_uploaded_count/<token>")
+def get_uploaded_count(token):
+    email = get_email_from_token(token)
 
-    # Get the top 3 results or all results if there are fewer than 3
-    top_3_results = [item[0] for item in doc_score_pairs[:3]]
+    if email is None:
+        return "Invalid token"
+    
+    collection = db[email]
+    uploaded_files = collection.count_documents({})
+    return str(uploaded_files)
 
-    # Join the results into a single string
-    joined_results = ' \n'.join(top_3_results)
 
-    QA_input = {
-        'question': query,
-        'context': joined_results
+# add file to the database
+def update_mongo_record(collection, fileName, text):
+    uploadFile = {
+        "FileName": fileName,
+        "Content": text
+    }
+    collection.insert_one(uploadFile)
+    
+    pass
+
+# Append the query-response into the history database
+def record_history(collection, query, response):
+    
+    pastRecord = {
+        "Query":  query,
+        "Response": response
     }
     
-    out = nlp(QA_input)
+    collection.insert_one(pastRecord)
 
-    output = clean_res(out)
+    pass
+
+# get the list of all queries from the user from the history database
+@app.route("/app/get_history_list/<token>")
+def get_history_list(token):
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({"error": "Invalid token"})
     
-    response = {"result": output}
-    print(response)
-    return response
+    history_collection = db_history[email]
+    history_documents = history_collection.find({}).sort("_id", pymongo.DESCENDING)
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
+    query_list = [doc["Query"] for doc in history_documents]
 
-@app.route('/upload_file', methods=['POST'])
-def upload_file():
-    files = request.files.getlist('files[]')
-    uploaded_files = []
-    for file in files:
+    return jsonify({"queries": query_list})
+
+
+# where the magic happens
+@app.route('/app/search/<token>', methods=['POST'])
+def search(token):    
+
+    # Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'result': 'Could not find the user.'})
+
+    data = request.json
+    query = data['value'] 
+
+    collection = db_history[email]
+
+    response = "Result of the search here"
+
+    record_history(collection, query, response)
+
+    return {"result": response}
+
+
+async def upload_single_file(file, collection):
+
+        print("===================================== STEP 1: ENTERED UPLOAD SINGLE FILE! ===================================")
         filename = file.filename
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-        uploaded_files.append(filename)
+        
         text = textract.process("uploads/" + filename).decode('utf-8')
 
         name, extension = os.path.splitext(filename)
@@ -166,12 +204,45 @@ def upload_file():
 
         os.remove("uploads/" + filename)
 
-        update_mongo_record(filename, text)
+        update_mongo_record(collection, filename, text)
+        print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
 
-        print("Done!")
 
+async def upload_multiple_file(collection):
+    files = request.files.getlist('files[]')
+
+    for file in files:
+        asyncio.ensure_future(upload_single_file(file, collection))
+    
+    print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
+
+@app.route('/app/upload_file/<token>', methods=['POST'])
+def upload_file(token):
+
+    # Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'Message': 'Invalid token'})
+
+    # Get the collection based on the email
+    collection = db[email]
+
+    print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
+    files = request.files.getlist('files[]')
+    uploaded_files = []
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(upload_multiple_file(collection))
+    loop.close()
+
+    for file in files:
+        filename = file.filename
+        uploaded_files.append(filename)
+
+    print("===================================== STEP 5: FINAL STAGE ===================================")
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
-
