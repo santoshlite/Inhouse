@@ -34,7 +34,6 @@ token_email_collection = db["token_email_mapping"]
 #   => values are the directory names
 URL_MAPPING = {
     '/': '/',
-    '/app': '/app',
     '/auth': '/auth',
 }
 
@@ -48,7 +47,10 @@ def svelte_app(token):
     if email:
         return send_from_directory('client/public', 'index.html')
     else:
-        return "Invalid token or expired."
+        return redirect('/')
+        
+        # return "Invalid token or expired." => basically won't display this error message anymore
+        # instead, will just redirect it to homescreen
 
 
 # method returns the closest matching directory
