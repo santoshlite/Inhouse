@@ -21,10 +21,10 @@ import os
 import re
 
 # OpenAI API key
-openai.api_key = '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'
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # MongoDB password
-db_password = 'passwordinhouse'
+db_password = os.getenv('DB_PASSWORD')
 
 # Passage ranking model
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
@@ -34,8 +34,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # setting the mongodb client
-uri = "mongodb+srv://inhouse:" + db_password + "@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
-print(uri)
+uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(uri, tlsCAFile=certifi.where())
 
 
@@ -375,7 +374,6 @@ async def upload_multiple_google_file(folder_id, collection):
     name_id_dictionary = get_files_in_folder(folder_id, collection)
 
     for key, value in name_id_dictionary.items():
-        # asyncio.ensure_future(upload_single_google_file(key, value, "tiany12318@gmail.com"))
         asyncio.ensure_future(upload_single_google_file(key, value, collection))
     
 
