@@ -1,4 +1,13 @@
+from __future__ import print_function
 from flask import Flask, send_from_directory, request, jsonify, redirect, render_template, session
+from g_drive_service import GoogleDriveService
+import io
+import gdown
+
+import google.auth
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseDownload
 from sentence_transformers import SentenceTransformer, util
 import asyncio
 import pymongo
@@ -12,10 +21,10 @@ import os
 import re
 
 # OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = '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'
 
 # MongoDB password
-db_password = os.getenv('DB_PASSWORD')
+db_password = 'passwordinhouse'
 
 # Passage ranking model
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
@@ -25,9 +34,14 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # setting the mongodb client
-uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
+uri = "mongodb+srv://inhouse:" + db_password + "@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
+print(uri)
 client = MongoClient(uri, tlsCAFile=certifi.where())
 
+
+
+# Build google drive service
+service=GoogleDriveService().build()
 
 # setting up the url mapping table to use later on in redirecting user to appropriate sites
 # this is a dictionary 
@@ -303,6 +317,69 @@ async def upload_multiple_file(collection):
     
     print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
 
+
+
+
+
+
+
+# This function gets all the files underneath a certain folder containing a given ID 
+@app.get('/files-in-folder/<folder_id>/')
+def get_files_in_folder(folder_id, collection):
+    
+    selected_field="files(id, name, webViewLink)"
+    query=f" '{folder_id}' in parents "
+    
+    list_of_files = service.files().list(
+        q=query,
+        fields=selected_field
+    ).execute()
+
+    name_id_dict = {}
+
+    # Loop through list of dictionaries and retrieve name and id of each file
+    for i in range(len(list_of_files["files"])):
+
+        print(i)
+        name = list_of_files["files"][i]["name"]
+        id = list_of_files["files"][i]["id"]
+
+        # Construct new dictionary
+        name_id_dict[name] = id
+
+
+    return name_id_dict
+
+
+# This function first download the file, then upload it to the mongo database
+async def upload_single_google_file(filename, id, collection):
+
+    gdown.download("https://drive.google.com/uc?id="+id, filename, quiet=False, fuzzy=True)
+
+    text = textract.process(filename).decode('utf-8')
+
+    with open(filename, "w") as file:
+            # Write the contents of the variable to the file
+            file.write(text)
+    
+    # Get the blocks from the file
+    blocks = file_to_blocks(text, 300, filename)
+
+    os.remove(filename)
+
+    update_mongo_record(collection, filename, text, blocks)
+
+
+async def upload_multiple_google_file(folder_id, collection):
+
+    name_id_dictionary = get_files_in_folder(folder_id, collection)
+
+    for key, value in name_id_dictionary.items():
+        # asyncio.ensure_future(upload_single_google_file(key, value, "tiany12318@gmail.com"))
+        asyncio.ensure_future(upload_single_google_file(key, value, collection))
+    
+
+
 @app.route('/app/upload_file/<token>', methods=['POST'])
 def upload_file(token):
 
@@ -314,6 +391,7 @@ def upload_file(token):
 
     # Get the collection based on the email
     collection = db[email]
+
 
     print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
     files = request.files.getlist('files[]')
@@ -331,6 +409,30 @@ def upload_file(token):
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
 
+@app.route('/app/upload_google_file/<token>/<folder_id>', methods=['POST'])
+def upload_google_file(token, folder_id):
+# Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'Message': 'Invalid token'})
+
+    # Get the collection based on the email
+    collection = db[email]
+
+    # NEEDS TO BE IMPLEMENTED!!!! => FOLDER - ID RETRIEVED!!!!
+    # folder_id = "1sckveKrkTZ6AlBBrufAsBAJUQMr_eZqM"
+
+    # upload_multiple_google_file(folder_id, collection)
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(upload_multiple_google_file(folder_id,collection))
+    loop.close()
+
+
+    print("===================================== STEP 5: FINAL STAGE ===================================")
+    return jsonify({'Message': f'Google Files uploaded successfullly'})
 
 ######################################
 #####################################
