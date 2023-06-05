@@ -354,8 +354,13 @@ def get_files_in_folder(folder_id, collection):
 async def upload_single_google_file(filename, id, collection):
 
     gdown.download("https://drive.google.com/uc?id="+id, filename, quiet=False, fuzzy=True)
+    
+    ext = os.path.splitext(filename)[1]
 
-    text = textract.process(filename).decode('utf-8')
+    if ext == "":
+        text = textract.process(filename, extension='docx').decode('utf-8')
+    else:
+        text = textract.process(filename).decode('utf-8')
 
     with open(filename, "w") as file:
             # Write the contents of the variable to the file
