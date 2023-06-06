@@ -178,11 +178,13 @@ def get_uploaded_count(token):
 
 
 # add file to the database
-def update_mongo_record(collection, fileName, text, blocks):
+def update_mongo_record(collection, fileName, text, blocks, modifiedDate, version):
     uploadFile = {
         "FileName": fileName,
         "Content": text,
         "Blocks": blocks, 
+        "ModifiedDate" : modifiedDate,
+        "Version" : version
     }
     collection.insert_one(uploadFile)
     
@@ -303,7 +305,7 @@ async def upload_single_file(file, collection):
 
         os.remove("uploads/" + filename)
 
-        update_mongo_record(collection, filename, text, blocks)
+        update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
 
         print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
 
@@ -317,16 +319,11 @@ async def upload_multiple_file(collection):
     print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
 
 
-
-
-
-
-
 # This function gets all the files underneath a certain folder containing a given ID 
 @app.get('/files-in-folder/<folder_id>/')
-def get_files_in_folder(folder_id, collection):
+def get_files_in_folder(folder_id):
     
-    selected_field="files(id, name, webViewLink)"
+    selected_field="files(id, name, webViewLink, version, modifiedTime)"
     query=f" '{folder_id}' in parents "
     
     list_of_files = service.files().list(
@@ -334,7 +331,7 @@ def get_files_in_folder(folder_id, collection):
         fields=selected_field
     ).execute()
 
-    name_id_dict = {}
+    name_info_dict = {}
 
     # Loop through list of dictionaries and retrieve name and id of each file
     for i in range(len(list_of_files["files"])):
@@ -342,21 +339,33 @@ def get_files_in_folder(folder_id, collection):
         print(i)
         name = list_of_files["files"][i]["name"]
         id = list_of_files["files"][i]["id"]
+        modifiedtime = list_of_files["files"][i]["modifiedTime"]
+        version = list_of_files["files"][i]["version"]
+        print("THIS IS THE VERSION =====-=-=-=-=-=-+>" + version)
+
+        #Construct list containing useful information
+        user_info = [id, modifiedtime, version]
 
         # Construct new dictionary
-        name_id_dict[name] = id
+        name_info_dict[name] = user_info
 
+    for key, value in name_info_dict.items():
+        print("filename is:" + key)
+        print("id is: " + value[0])
+        print("modified time is: " + value[1])
+        print("modified version is: " + value[2])
 
-    return name_id_dict
+    return name_info_dict
 
 
 # This function first download the file, then upload it to the mongo database
-async def upload_single_google_file(filename, id, collection):
+async def upload_single_google_file(filename, list_of_info, collection):
 
-    gdown.download("https://drive.google.com/uc?id="+id, filename, quiet=False, fuzzy=True)
+    gdown.download("https://drive.google.com/uc?id="+ list_of_info[0], filename, quiet=False, fuzzy=True)
     
     ext = os.path.splitext(filename)[1]
 
+    # if-else checks the extension to whether it is a google doc or not
     if ext == "":
         text = textract.process(filename, extension='docx').decode('utf-8')
     else:
@@ -371,16 +380,213 @@ async def upload_single_google_file(filename, id, collection):
 
     os.remove(filename)
 
-    update_mongo_record(collection, filename, text, blocks)
+    # update the mongo record to store appropriate information
+    update_mongo_record(collection, filename, text, blocks, list_of_info[1], list_of_info[2])
 
 
 async def upload_multiple_google_file(folder_id, collection):
 
-    name_id_dictionary = get_files_in_folder(folder_id, collection)
+    name_info_dictionary = get_files_in_folder(folder_id)
 
-    for key, value in name_id_dictionary.items():
+    # for loop that loops through the dictionary of google files and gives the file name and its corresponding list for each
+    for key, value in name_info_dictionary.items():
         asyncio.ensure_future(upload_single_google_file(key, value, collection))
     
+
+@app.route('/app/upload_google_file/<token>/<folder_id>', methods=['POST'])
+def upload_google_file(token, folder_id):
+# Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'Message': 'Invalid token'})
+
+    # Get the collection based on the email
+    collection = db[email]
+
+    # upload_multiple_google_file(folder_id, collection)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(upload_multiple_google_file(folder_id,collection))
+    loop.close()
+
+
+    print("===================================== STEP 5: FINAL STAGE ===================================")
+    return jsonify({'Message': f'Google Files uploaded successfullly'})
+
+
+#
+#
+# ===================================================== SYNCING GOOGLE DOC ======================================================
+#
+#
+
+@app.route('/app/sync_google_file/<token>/<folder_id>', methods=['POST'])
+def sync_google_files(token, folder_id):
+    
+    # Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'Message': 'Invalid token'})
+
+    # Get the collection based on the email
+    collection = db[email]
+
+    past_name_infoList_dictionary = {}
+
+    # MAJOR STEP: loop through the database and retreieve values of modified dates
+    for x in collection.find({}, {"FileName" : 1, "ModifiedDate" : 1, "Version" : 1}):
+
+        # constructing the list of info!
+        # value[0] MUST CORRESPOND TO ID NUMBER 
+        # value[1] MUST CORRESPOND TO MODIFIED DATE
+        # value[2] MUST CORRESPOND TO VERSION
+        temp_list_of_info = [x['_id'], x['ModifiedDate'], x['Version']]
+
+        # updating dictionary!!!
+        past_name_infoList_dictionary[x['FileName']] = temp_list_of_info
+        
+    #
+    # At this point, I successfully retrieved info from mongodatabase and have it stored in a dictionary
+    #
+
+
+    # Retrieving current google doc information => simply call the previously defined function
+    current_name_info_dictionary = get_files_in_folder(folder_id)
+
+
+    # For loop that goes through the current dictionary => since this is the most important 
+    for key, value in current_name_info_dictionary.items():
+
+        # Now, retreive current and past list of info for each key entry in the dictionary
+        current_single_list_of_info = value
+        past_single_list_of_info = past_name_infoList_dictionary.get(key)
+
+        # something to keep in mind:
+        #
+        # The current_single_list_of_info architecture is as follows:  ['1qQwuE0IeSenVunWXrilsxfF--hV-KeZQaQ2EO7nDsvA', '2023-06-05T10:23:36.357Z', '12']
+        #
+        # The past_single_list_of_info architecture is as follows:    [ObjectId('647de796104f971dadd33ca6'), '2023-06-05T10:23:36.357Z', '12']
+        #
+        #
+
+
+# case 1: user created a new doc!!!!!
+        
+        # if statement checks if list is empty
+        if(not past_single_list_of_info):
+
+            # First step: get both content and blocks from the file so I UPDATE THEM!!!!!
+            file_id = current_single_list_of_info[0]
+            filename = key
+
+            gdown.download("https://drive.google.com/uc?id="+ file_id, filename, quiet=False, fuzzy=True)
+            ext = os.path.splitext(filename)[1]
+
+            # if-else checks the extension to whether it is a google doc or not
+            if ext == "":
+                text = textract.process(filename, extension='docx').decode('utf-8')
+            else:
+                text = textract.process(filename).decode('utf-8')
+
+
+            with open(filename, "w") as file:
+                # Write the contents of the variable to the file
+                file.write(text)
+    
+            # Get the blocks from the file
+            blocks = file_to_blocks(text, 300, filename)
+
+            os.remove(filename)
+
+            # INSERTING THE DOC
+            collection.insert_one(
+                {
+                    'FileName': filename,
+                    'Content' : text,
+                    'Blocks' : blocks, 
+                    'ModifiedDate' : current_single_list_of_info[1],
+                    'Version' : current_single_list_of_info[2]
+                }
+            )
+
+        else:
+            # Now, I know user has a pre-existing list of info so I need to check if it is modified or not
+
+            if(current_single_list_of_info[1] != past_single_list_of_info[1]):
+
+                # First step: get both content and blocks from the file so I UPDATE THEM!!!!!
+                file_id = current_single_list_of_info[0]
+                filename = key
+
+                gdown.download("https://drive.google.com/uc?id="+ file_id, filename, quiet=False, fuzzy=True)
+                ext = os.path.splitext(filename)[1]
+
+                # if-else checks the extension to whether it is a google doc or not
+                if ext == "":
+                    text = textract.process(filename, extension='docx').decode('utf-8')
+                else:
+                    text = textract.process(filename).decode('utf-8')
+
+
+                with open(filename, "w") as file:
+                    # Write the contents of the variable to the file
+                    file.write(text)
+    
+                # Get the blocks from the file
+                blocks = file_to_blocks(text, 300, filename)
+
+                os.remove(filename)
+
+
+                # NOW, the updated variables are as follows:
+                # Content => text
+                # Blocks  => blocks
+                # ModifiedDate => current_single_list_of_info[1]
+                # Version => current_single_list_of_info[2]
+
+                # With this, I update the collection in the following:
+
+                # Define the filter criteria as the object id in the mongodb => ALWAYS UNIQUE
+                #
+                filter_criteria = {
+                    '_id' : past_single_list_of_info[0]
+                }
+                
+                
+                # Define the update operation
+                update_operation = {
+                    '$set': {
+                        'Content' : text,
+                        'Blocks' : blocks, 
+                        'ModifiedDate' : current_single_list_of_info[1],
+                        'Version' : current_single_list_of_info[2]
+                    }
+                }
+                
+                collection.update_one(filter_criteria, update_operation)
+
+    # For loop that goes through the past dictionary => this is to search if user have removed a doc
+    for key, value in past_name_infoList_dictionary.items():
+        past_single_list_of_info = value
+        current_single_list_of_info = current_name_info_dictionary.get(key)
+
+        # Checks if the current google doc contains all documents from the past
+        if(not current_single_list_of_info):
+
+
+            # Only delete if the document IS INDEED FROM GOOGLE DRIVE! => This only require checking modified date
+            if(past_single_list_of_info[1] != ("no need for modified time")):
+
+                # If the value does not exist in current google doc, do this:
+                criteria = {
+                    "_id": past_single_list_of_info[0]
+                }
+
+                collection.delete_one(criteria)
+
+    return jsonify({'Message': f'Google Files synced successfullly'})
 
 
 @app.route('/app/upload_file/<token>', methods=['POST'])
@@ -411,31 +617,6 @@ def upload_file(token):
     print("===================================== STEP 5: FINAL STAGE ===================================")
     return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
-
-@app.route('/app/upload_google_file/<token>/<folder_id>', methods=['POST'])
-def upload_google_file(token, folder_id):
-# Get the email associated with the token
-    email = get_email_from_token(token)
-
-    if email is None:
-        return jsonify({'Message': 'Invalid token'})
-
-    # Get the collection based on the email
-    collection = db[email]
-
-    # NEEDS TO BE IMPLEMENTED!!!! => FOLDER - ID RETRIEVED!!!!
-    # folder_id = "1sckveKrkTZ6AlBBrufAsBAJUQMr_eZqM"
-
-    # upload_multiple_google_file(folder_id, collection)
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(upload_multiple_google_file(folder_id,collection))
-    loop.close()
-
-
-    print("===================================== STEP 5: FINAL STAGE ===================================")
-    return jsonify({'Message': f'Google Files uploaded successfullly'})
 
 ######################################
 #####################################
