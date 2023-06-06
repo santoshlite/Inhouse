@@ -1,18 +1,20 @@
 from __future__ import print_function
-from flask import Flask, send_from_directory, request, jsonify, redirect, render_template, session
+from flask import Flask, send_from_directory, request, jsonify, redirect, render_template
+from sentence_transformers import SentenceTransformer, util
 from g_drive_service import GoogleDriveService
 import io
 import gdown
-import re
-
+import time
+import random
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
-from sentence_transformers import SentenceTransformer, util
 import asyncio
 import pymongo
 from pymongo.mongo_client import MongoClient
+import itertools
+from markupsafe import Markup
 import certifi
 import secrets
 import textract
@@ -39,7 +41,6 @@ uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retry
 client = MongoClient(uri, tlsCAFile=certifi.where())
 
 
-
 # Build google drive service
 service=GoogleDriveService().build()
 
@@ -51,6 +52,7 @@ URL_MAPPING = {
     '/': '/',
     '/auth': '/auth',
 }
+
 
 # setting the 2 databases
 db = client["userDocuments"]
@@ -105,6 +107,17 @@ def auth():
 def home(path):
     return send_from_directory('client/public', path)
 
+
+# Helper function that replace tags 
+def replace_tags(text):
+    pattern = r'\[(\d+)\]'  # regex pattern to match [number]
+
+    def replace(match):
+        number = match.group(1)
+        return '{' + number + '}'  # Replace [number] with {number}
+
+    modified_text = re.sub(pattern, replace, text)
+    return modified_text
 
 # generate a token for each new user
 def generate_token():
@@ -191,6 +204,7 @@ def update_mongo_record(collection, fileName, text, blocks, modifiedDate, versio
     
     pass
 
+
 def record_history(collection, query, response):
     # Check if the query already exists in the collection
     existing_query = collection.find_one({'Query': query})
@@ -251,16 +265,15 @@ def get_response_from_query(token):
     history_collection = db_history[email]
 
     if email is None:
-        return jsonify({'response': 'Invalid token'})
+        return jsonify({'result': 'Invalid token', 'blocks': []})
     
     # Find the most recent document in the collection that matches the query
     result = history_collection.find_one({'Query': query})
 
     if result:
-        response = result['Response']
-        return jsonify({'response': response})
+        return result['Response']
     else:
-        return jsonify({'response': 'Response not found'})
+        return jsonify({'result': 'No response found', 'blocks': []})
 
 # transform files to blocks
 def file_to_blocks(content, k, docname):
@@ -274,29 +287,13 @@ def file_to_blocks(content, k, docname):
         if len(current_block) + len(sentence) <= k:
             current_block += sentence + " "
         else:
-            blocks.append(docname + " - " + current_block.strip())
+            blocks.append("{" + docname + "}" + " - " + current_block.strip())
             current_block = sentence + " "
 
     if current_block:
-        blocks.append(docname + " - " + current_block.strip())
+        blocks.append("{" + docname + "}" + " - " + current_block.strip())
 
     return blocks
-
-
-
-
-# Helper function that replace tags 
-def replace_tags(text):
-    pattern = r'\[(\d+)\]'  # regex pattern to match [number]
-
-    def replace(match):
-        number = match.group(1)
-        return '{' + number + '}'  # Replace [number] with {number}
-
-    modified_text = re.sub(pattern, replace, text)
-    return modified_text
-
-
 
 async def upload_single_file(file, collection):
 
@@ -307,10 +304,7 @@ async def upload_single_file(file, collection):
         
         text = textract.process("uploads/" + filename).decode('utf-8')
 
-        
         text = replace_tags(text)
-
-        print(text)
 
         name, extension = os.path.splitext(filename)
 
@@ -327,7 +321,14 @@ async def upload_single_file(file, collection):
         os.remove("uploads/" + filename)
         os.remove(file_path)
 
-        update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
+        # Search for documents with the specified filename
+        fileExist = collection.find_one({"FileName": filename})
+
+        # Check if a document was found
+        if fileExist is not None:
+             update_mongo_record(collection, filename+"#", text, blocks, "no need for modified time", "no need for version number")
+        else:
+             update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
 
         print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
 
@@ -339,6 +340,33 @@ async def upload_multiple_file(collection):
         asyncio.ensure_future(upload_single_file(file, collection))
     
     print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
+
+@app.route('/app/upload_file/<token>', methods=['POST'])
+def upload_file(token):
+
+    # Get the email associated with the token
+    email = get_email_from_token(token)
+
+    if email is None:
+        return jsonify({'Message': 'Invalid token'})
+
+    # Get the collection based on the email
+    collection = db[email]
+
+    print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
+    files = request.files.getlist('files[]')
+    uploaded_files = []
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(upload_multiple_file(collection))
+    loop.close()
+
+    for file in files:
+        filename = file.filename
+        uploaded_files.append(filename)
+
+    print("===================================== STEP 5: FINAL STAGE ===================================")
+    return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
 
 
 # This function gets all the files underneath a certain folder containing a given ID 
@@ -387,14 +415,16 @@ async def upload_single_google_file(filename, list_of_info, collection):
     
     ext = os.path.splitext(filename)[1]
 
-    # if-else checks the extension to whether it is a google doc or not
-    if ext == "":
-        text = textract.process(filename, extension='docx').decode('utf-8')
-    else:
-        text = textract.process(filename).decode('utf-8')
+    try:
+        # if-else checks the extension to whether it is a google doc or not
+        if ext == "":
+            text = textract.process(filename, extension='docx').decode('utf-8')
+        else:
+            text = textract.process(filename).decode('utf-8')
+    except KeyError:
+        return 
 
     text = replace_tags(text)
-
 
     with open(filename, "w") as file:
             # Write the contents of the variable to the file
@@ -402,7 +432,7 @@ async def upload_single_google_file(filename, list_of_info, collection):
     
     # Get the blocks from the file
     blocks = file_to_blocks(text, 300, filename)
-
+    print(filename)
     os.remove(filename)
 
     # update the mongo record to store appropriate information
@@ -418,16 +448,43 @@ async def upload_multiple_google_file(folder_id, collection):
         asyncio.ensure_future(upload_single_google_file(key, value, collection))
     
 
-@app.route('/app/upload_google_file/<token>/<folder_id>', methods=['POST'])
-def upload_google_file(token, folder_id):
+def extract_folder_id(url):
+    pattern = r'/drive/folders/([\w-]+)\b'
+    match = re.search(pattern, url)
+    if match and match.group(1):
+        return match.group(1)
+    return None
+
+@app.route('/app/upload_google_file/<token>', methods=['POST'])
+def upload_google_file(token):
 # Get the email associated with the token
     email = get_email_from_token(token)
+
+    data = request.json
+    url_folder = data['url'] 
+
+    folder_id = extract_folder_id(url_folder)
+
 
     if email is None:
         return jsonify({'Message': 'Invalid token'})
 
     # Get the collection based on the email
     collection = db[email]
+
+    user_data = db["token_email_mapping"].find_one({"email": email})
+
+    if user_data:
+        if "folder_id" in user_data:
+            if folder_id in user_data["folder_id"]:
+                return jsonify({'Message': 'Folder ID already exists.'})
+            else:
+                # Append folder_id to the existing list
+                db["token_email_mapping"].update_one({"email": email}, {"$addToSet": {"folder_id": folder_id}})
+        else:
+            # Create a new list with folder_id as the only element
+            db["token_email_mapping"].update_one({"email": email}, {"$set": {"folder_id": [folder_id]}})
+
 
     # upload_multiple_google_file(folder_id, collection)
     loop = asyncio.new_event_loop()
@@ -437,7 +494,7 @@ def upload_google_file(token, folder_id):
 
 
     print("===================================== STEP 5: FINAL STAGE ===================================")
-    return jsonify({'Message': f'Google Files uploaded successfullly'})
+    return jsonify({'Message': f'Google Files uploaded successfullly.'})
 
 
 #
@@ -446,9 +503,25 @@ def upload_google_file(token, folder_id):
 #
 #
 
-@app.route('/app/sync_google_file/<token>/<folder_id>', methods=['POST'])
+@app.route('/app/sync_google/<token>/')
+def sync_google(token):
+
+    # Get the email associated with the token
+    email = get_email_from_token(token)
+
+    user_data = db["token_email_mapping"].find_one({"email": email})
+
+    if user_data and "folder_id" in user_data:
+            folder_ids = user_data["folder_id"]
+            for folder_id in folder_ids:
+                sync_google_files(token, folder_id)
+            return jsonify({'Message': 'Google Drive synced successfullly'})
+    else:
+        return jsonify({'Message': 'X'})
+
+
 def sync_google_files(token, folder_id):
-    
+
     # Get the email associated with the token
     email = get_email_from_token(token)
 
@@ -509,15 +582,16 @@ def sync_google_files(token, folder_id):
             gdown.download("https://drive.google.com/uc?id="+ file_id, filename, quiet=False, fuzzy=True)
             ext = os.path.splitext(filename)[1]
 
-            # if-else checks the extension to whether it is a google doc or not
-            if ext == "":
-                text = textract.process(filename, extension='docx').decode('utf-8')
-            else:
-                text = textract.process(filename).decode('utf-8')
-
-
+            try:
+                # if-else checks the extension to whether it is a google doc or not
+                if ext == "":
+                    text = textract.process(filename, extension='docx').decode('utf-8')
+                else:
+                    text = textract.process(filename).decode('utf-8')
+            except KeyError:
+                return 
+    
             text = replace_tags(text)
-
 
             with open(filename, "w") as file:
                 # Write the contents of the variable to the file
@@ -617,40 +691,35 @@ def sync_google_files(token, folder_id):
 
     return jsonify({'Message': f'Google Files synced successfullly'})
 
-
-@app.route('/app/upload_file/<token>', methods=['POST'])
-def upload_file(token):
-
-    # Get the email associated with the token
-    email = get_email_from_token(token)
-
-    if email is None:
-        return jsonify({'Message': 'Invalid token'})
-
-    # Get the collection based on the email
-    collection = db[email]
-
-
-    print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
-    files = request.files.getlist('files[]')
-    uploaded_files = []
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(upload_multiple_file(collection))
-    loop.close()
-
-    for file in files:
-        filename = file.filename
-        uploaded_files.append(filename)
-
-    print("===================================== STEP 5: FINAL STAGE ===================================")
-    return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
-
-
 ######################################
 #####################################
 #####################################
 
+
+def call_llm(prompt):
+    max_retries = 5
+    retry_count = 0
+    wait_time = 1
+
+    while retry_count < max_retries:
+        try:
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=prompt
+            )
+            
+            response = completion.choices[0].message.content.strip()
+
+            return response  # Return the response if the API call is successful
+
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            print(f"Retrying in {wait_time} seconds...")
+            time.sleep(wait_time)
+
+            # Increase the wait time exponentially for the next retry
+            wait_time *= 2
+            retry_count += 1
 
 def construct_prompt(query, top_blocks, history):
 
@@ -664,6 +733,7 @@ def construct_prompt(query, top_blocks, history):
     system_prompt += "Sources:\n"
     for i, block in enumerate(top_blocks):
         system_prompt += f"[{i+1}] {block}\n"
+        print(f"[{i+1}] {block}\n")
 
     system_prompt = system_prompt.strip()
 
@@ -673,27 +743,30 @@ def construct_prompt(query, top_blocks, history):
         system_prompt += "\n\n"\
             "Before the question (\"Q: \"), there will be a history of previous questions and answers. " \
             "These sources only apply to the last question. Any sources used in previous answers " \
-            "are invalid,  unless they are also part of the sources this time."
+            "are invalid for the current question. For the current question, please rely solely on "\
+            "the sources provided in its prompt."
 
     prompt.append({"role": "system", "content": system_prompt.strip()})
 
     history_prompt = []
     for j in range(len(history)):
         query_history = {"role": "user", "content": "Q: " + history[j]["Query"]}
-        response_history = {"role": "assistant", "content": history[j]["Response"]}
+        response_history = {"role": "assistant", "content": history[j]["Response"]["result_plain"]}
         history_prompt.extend([query_history, response_history])
 
     prompt.extend(history_prompt)
 
     question_prompt = f"In your answer, please cite any claims you make back to each source " \
-                      f"using their respective format: [1], [2], etc. Do not reveal explicitly the association between the tags and their respective sources. " \
-                      f"If you use multiple sources to make a claim cite all of them. For example: \"The milk chocolate bars are your best-selling product [c, d, e].\"\n\nQ: " + query
+                      f"using the format: [a], [b], etc. Although you must indicate the sources you use using the format discussed previously, you should not explicitly show or list your sources e.g., links, file name." \
+                      f"If you use multiple sources to make a claim cite all of them. " \
+                      f"For example: \"The milk chocolate bars are your best-selling product [1] [2] [3].\"\n\nQ: " + query
 
     prompt.append({"role": "user", "content": question_prompt})
     
     print(prompt)
     print("===================================== PROMPT CONSTRUCTED! ===================================")
     return prompt
+
 
 # where the magic happens
 @app.route('/app/search/<token>', methods=['POST'])
@@ -721,7 +794,7 @@ def search(token):
     query_emb = model.encode(query)
 
     top_blocks = []
-    num_top_blocks = 5
+    num_top_blocks = 10
 
     for document in cursor:
         block = document['Blocks']
@@ -746,22 +819,68 @@ def search(token):
     history = list(_history)
 
     prompt = construct_prompt(query, top_blocks, history)
-
-    completion = openai.ChatCompletion.create(
-      model="gpt-3.5-turbo",
-      messages=prompt
-    )
     
-    print("\n")
-    print(completion)
-    print("\n")
-    response = completion.choices[0].message.content
+    response = call_llm(prompt)
 
-    record_history(collection_history, query, response)
+    print("===================================== RESPONSE FROM GPT-3 ===================================")
+    print(response)
+    print("===================================== END RESPONSE FROM GPT-3 ===================================")
 
-    print(top_blocks)
-    print("\n")
-    return {"result": response}
+
+    output = {"blocks": []}
+
+    tags = re.findall(r"\[(\d+)\]", response)
+
+    unique_tags = []
+    seen = set()
+
+    for tag in tags:
+        if tag not in seen:
+            seen.add(tag)
+            unique_tags.append(tag)
+
+    print(unique_tags)
+    
+    style = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+
+    # Truncate style list to match the length of unique_tags
+    truncated_style = list(itertools.islice(style, len(unique_tags)))
+
+    # Mapping document name to blocks that were used
+    for index, (tag, s) in enumerate(zip(unique_tags, truncated_style)):
+        block = top_blocks[int(tag)-1]
+        document_name = re.search(r"{([^}]+)} - ", block)
+        document_name = document_name.group(1)
+        block = block.replace("{"+document_name+"}" + " - ", "") 
+        # Check if text starts with a lowercase letter
+        if block[0].islower():
+            block = "[...] " + block
+
+        # Check if text doesn't end with a period
+        if block and not block.endswith("."):
+            block += " [...]"    
+
+        output["blocks"].append({"document_name": document_name, "block": block, "tag": f"<span class='{s}' id='span-{s}' onclick='scrollToNextSpan('{s}')'>[" + str(index+1) + "]</span>"})
+
+
+    # Mapping tags to order of appearance -> Re-indexing tags to start from 1
+    tag_mapping = {}
+    for i, (tag,s) in enumerate(zip(unique_tags, truncated_style), start=1):
+        print(tag, i)
+        tag_mapping[tag] = f"<span class='{s}' id='span-{s}-nd'>[{str(i)}]</span>"
+
+    final_response = re.sub(r"\[(\d+)\]", lambda match: "{}".format(tag_mapping.get(match.group(1), match.group(1))), response)
+    
+
+    output["result_plain"] = response
+
+    output["result"] = Markup("<pre class='response'>"+final_response +"</pre>") 
+    
+    output["query"] = query
+
+    record_history(collection_history, query, output)
+    
+    return jsonify(output)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
