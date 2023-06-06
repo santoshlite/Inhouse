@@ -1,12 +1,17 @@
 <script>
   import { onMount } from 'svelte';
   import History from './lib/History.svelte';
+
   let inputValue = "";
-  let responseValue = "";
+  let responseValue = "Ready to take your questions!";
   let indexedInfo = "";
   let token = "";
-
+  let blocksList= [];
   let historylist = [];
+  let fileInput;
+  let question = "";
+  let showInputBox = false;
+  let urlGoogle;
 
   async function getHistoryList() {
     const response = await fetch(`/app/get_history_list/${token}`);
@@ -49,7 +54,13 @@
       responseValue = "No text :(";
       return;
     }
-    responseValue = "Loading...";
+    else if (indexedInfo === "Upload files to get started!"){
+      responseValue = "Upload files first";
+      return;
+    }
+    
+    responseValue = "Waiting for the LLM...";
+    blocksList = [];
 
     const response = await fetch(`./search/${token}`, {
       method: 'POST',
@@ -58,12 +69,47 @@
       },
       body: JSON.stringify({ value: inputValue })
     });
+
     const data = await response.json();
+    console.log(data)
+    question = "Q: " + inputValue;
     responseValue = data.result;
+    blocksList = data.blocks;
+    console.log(blocksList)
     await getHistoryList();
   }
 
-  let fileInput;
+
+  async function askUrl() {
+    showInputBox = true;
+  }
+
+  async function uploadGoogle() {
+
+    showInputBox = false;
+
+    if (urlGoogle === "") {
+      indexedInfo = "URL is empty :(";
+      return;
+    }
+
+    indexedInfo = "Loading your Google Drive folder...";
+
+    const response = await fetch(`./upload_google_file/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: urlGoogle })
+    });
+
+    const data = await response.json();
+    const count = await getUploadedItems();
+    indexedInfo = data.Message +" "+count + " indexed.";
+    
+    await getHistoryList();
+  }
+
 
   async function uploadFile() {
     indexedInfo = "Uploading...";
@@ -95,6 +141,25 @@
     fetchData();
   }
 
+  async function fetchResponse(query) {
+    const response = await fetch(`./get_response_from_query/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ value: query })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      responseValue = data.result;
+      question = "Q: "+data.query;
+      blocksList = data.blocks;
+    } else {
+      responseValue = "Error fetching response.";
+    }
+  }
+
   function handleKeyDown(event) {
     if (event.key === "Enter") {
       search();
@@ -106,17 +171,47 @@
     uploadFile();
   }
 
+  async function syncGoogle() {
+    indexedInfo = "Syncing with Google Drive...";
+    const response = await fetch(`./sync_google/${token}`);
+    const data = await response.json();
+    console.log(data)
+    if(data.Message === "X"){
+      console.log("here")
+      await fetchData();
+    }
+    else{
+      const count = await getUploadedItems();
+      indexedInfo = data.Message + ". "+count + " indexed.";
+    }
+    return data;
+  }
+
+  function scrollToNextSpan(spanId) {
+  const spanElements = document.getElementsByClassName('one');
+  const currentIndex = Array.from(spanElements).findIndex(span => span.id === spanId);
+
+  if (currentIndex !== -1) {
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < spanElements.length) {
+      const nextSpan = spanElements[nextIndex];
+      nextSpan.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}
 
   onMount(async () => {
     await getTokenFromUrl();
     await fetchData();
     await getHistoryList();
+    await syncGoogle();
   });
 
 </script>
 
 <div class="row">
-      <History historyList={historylist} />
+      <History historyList={historylist} fetchResponse={fetchResponse}/>
 </div>
 
     <div class="row-bar">
@@ -127,17 +222,45 @@
             <input placeholder="Ask a question." class="searchbar" type="text" bind:value={inputValue} on:keydown={handleKeyDown}/>
             <button class="submit-button" on:click={search}>🔍</button>
           </div>
-          <div class="upload-button-container">
-            <label for="fileInput" class="upload-button">
-              📥  &thinsp; Upload
-              <input id="fileInput" type="file" style="display:none" on:change={handleFileChange} multiple />
-            </label>
-          </div>
+
         </div>
+        <div class="uploads">
+        <div class="upload-button-container">
+          <label for="fileInput" class="upload-button">
+            📥  &thinsp; Upload
+            <input id="fileInput" type="file" style="display:none" on:change={handleFileChange} multiple />
+          </label>
+        </div>
+
+        <div class="gdrive-button-container">
+          <label class="gdrive-button">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="google drive icon"/> &thinsp; Sync Drive
+            <input type="text" style="display:none" on:click={askUrl}/>
+          </label>
+        </div>
+      </div>
+      {#if showInputBox}
+      <div>
+        <input type="text" placeholder="Share link to a folder..." bind:value={urlGoogle}/>
+        <button on:click={uploadGoogle}>Sync</button>
+      </div>
+    {/if}
         <p class="custom-i">{indexedInfo}</p>
       </div>
 
-      <p>{responseValue}</p>
+      <div class="wrapper-response">
+        <p class="response"><b class="query">{question}</b>{@html responseValue}</p>
+        {#each blocksList as block}
+        <div class="wrapper-block">
+          <div class="title-tag">
+            {@html block.tag} 
+            <p class="docname">{block.document_name}</p>
+          </div>
+        <p>{block.block}</p>
+        
+      </div>
+      {/each}
+      </div>
 
     </div>
     
