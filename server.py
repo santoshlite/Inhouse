@@ -3,6 +3,7 @@ from flask import Flask, send_from_directory, request, jsonify, redirect, render
 from g_drive_service import GoogleDriveService
 import io
 import gdown
+import re
 
 import google.auth
 from googleapiclient.discovery import build
@@ -282,6 +283,21 @@ def file_to_blocks(content, k, docname):
     return blocks
 
 
+
+
+# Helper function that replace tags 
+def replace_tags(text):
+    pattern = r'\[(\d+)\]'  # regex pattern to match [number]
+
+    def replace(match):
+        number = match.group(1)
+        return '{' + number + '}'  # Replace [number] with {number}
+
+    modified_text = re.sub(pattern, replace, text)
+    return modified_text
+
+
+
 async def upload_single_file(file, collection):
 
         print("===================================== STEP 1: ENTERED UPLOAD SINGLE FILE! ===================================")
@@ -290,6 +306,11 @@ async def upload_single_file(file, collection):
         file.save(file_path)
         
         text = textract.process("uploads/" + filename).decode('utf-8')
+
+        
+        text = replace_tags(text)
+
+        print(text)
 
         name, extension = os.path.splitext(filename)
 
@@ -304,6 +325,7 @@ async def upload_single_file(file, collection):
         blocks = file_to_blocks(text, 300, filename)
 
         os.remove("uploads/" + filename)
+        os.remove(file_path)
 
         update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
 
@@ -370,6 +392,9 @@ async def upload_single_google_file(filename, list_of_info, collection):
         text = textract.process(filename, extension='docx').decode('utf-8')
     else:
         text = textract.process(filename).decode('utf-8')
+
+    text = replace_tags(text)
+
 
     with open(filename, "w") as file:
             # Write the contents of the variable to the file
@@ -491,6 +516,9 @@ def sync_google_files(token, folder_id):
                 text = textract.process(filename).decode('utf-8')
 
 
+            text = replace_tags(text)
+
+
             with open(filename, "w") as file:
                 # Write the contents of the variable to the file
                 file.write(text)
@@ -529,6 +557,7 @@ def sync_google_files(token, folder_id):
                 else:
                     text = textract.process(filename).decode('utf-8')
 
+                text = replace_tags(text)
 
                 with open(filename, "w") as file:
                     # Write the contents of the variable to the file
