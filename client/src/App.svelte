@@ -14,7 +14,7 @@
   let urlGoogle;
 
   async function getHistoryList() {
-    const response = await fetch(`/app/get_history_list/${token}`);
+    const response = await fetch(`./get_history_list/${token}`);
     const data = await response.json();
 
     if (response.ok) {
