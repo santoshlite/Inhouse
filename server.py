@@ -60,13 +60,13 @@ token_email_collection = db["token_email_mapping"]
     
 @app.route("/")
 def base():
-    return send_from_directory('client/src', 'frontpage.html')
+    return send_from_directory('client/public', 'frontpage.html')
 
 @app.route("/app/<token>")
 def svelte_app(token):
     email = get_email_from_token(token)
     if email:
-        return send_from_directory('client/src', 'index.html')
+        return send_from_directory('client/public', 'index.html')
     else:
         return redirect('/')
 
@@ -93,16 +93,16 @@ def page_not_found(e):
     if closest_directory:
         return redirect(closest_directory)
     else:
-        return send_from_directory('client/src', '404.html')
+        return send_from_directory('client/public', '404.html')
     
 
 @app.route("/auth")
 def auth():
-    return send_from_directory('client/src', 'auth.html')
+    return send_from_directory('client/public', 'auth.html')
 
 @app.route("/<path:path>")
 def home(path):
-    return send_from_directory('templates', path)
+    return send_from_directory('client/public', path)
 
 
 # Helper function that replace tags 
