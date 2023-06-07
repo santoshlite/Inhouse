@@ -2,11 +2,8 @@ from __future__ import print_function
 from flask import Flask, send_from_directory, request, jsonify, redirect, render_template
 from sentence_transformers import SentenceTransformer, util
 from g_drive_service import GoogleDriveService
-import io
 import gdown
 import time
-import random
-import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
@@ -60,16 +57,16 @@ db_history = client["userHistory"]
 
 # setting the collection for authentification
 token_email_collection = db["token_email_mapping"]
-
+    
 @app.route("/")
 def base():
-    return send_from_directory('client/public', 'frontpage.html')
+    return send_from_directory('client/src', 'frontpage.html')
 
 @app.route("/app/<token>")
 def svelte_app(token):
     email = get_email_from_token(token)
     if email:
-        return send_from_directory('client/public', 'index.html')
+        return send_from_directory('client/src', 'index.html')
     else:
         return redirect('/')
 
@@ -96,16 +93,16 @@ def page_not_found(e):
     if closest_directory:
         return redirect(closest_directory)
     else:
-        return render_template('404.html'), 404
+        return send_from_directory('client/src', '404.html')
     
 
 @app.route("/auth")
 def auth():
-    return send_from_directory('client/public', 'auth.html')
+    return send_from_directory('client/src', 'auth.html')
 
 @app.route("/<path:path>")
 def home(path):
-    return send_from_directory('client/public', path)
+    return send_from_directory('templates', path)
 
 
 # Helper function that replace tags 
@@ -503,7 +500,7 @@ def upload_google_file(token):
 #
 #
 
-@app.route('/app/sync_google/<token>/')
+@app.route('<token>/')
 def sync_google(token):
 
     # Get the email associated with the token
@@ -883,4 +880,4 @@ def search(token):
     return jsonify(output)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5000)
