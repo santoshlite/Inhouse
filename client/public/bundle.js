@@ -1338,7 +1338,7 @@ var app = (function () {
     		$$invalidate(1, responseValue = "Waiting for the LLM...");
     		$$invalidate(3, blocksList = []);
 
-    		const response = await fetch(`https://inhouse-test.up.railway.app/app/search/${token}`, {
+    		const response = await fetch(`./search/${token}`, {
     			method: 'POST',
     			headers: { 'Content-Type': 'application/json' },
     			body: JSON.stringify({ value: inputValue })
@@ -1435,7 +1435,7 @@ var app = (function () {
 
     	async function syncGoogle() {
     		$$invalidate(2, indexedInfo = "Syncing with Google Drive...");
-    		const response = await fetch(`./sync_google/${token}`);
+    		const response = await fetch(`https://inhouse-test.up.railway.app/app/sync_google/${token}`);
     		const data = await response.json();
 
     		if (data.Message === "X") {
