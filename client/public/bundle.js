@@ -1,4 +1,3 @@
-
 (function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
@@ -24,9 +23,23 @@ var app = (function () {
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
     }
+    let src_url_equal_anchor;
+    function src_url_equal(element_src, url) {
+        if (!src_url_equal_anchor) {
+            src_url_equal_anchor = document.createElement('a');
+        }
+        src_url_equal_anchor.href = url;
+        return element_src === src_url_equal_anchor.href;
+    }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
     }
+
+    const globals = (typeof window !== 'undefined'
+        ? window
+        : typeof globalThis !== 'undefined'
+            ? globalThis
+            : global);
     function append(target, node) {
         target.appendChild(node);
     }
@@ -46,6 +59,9 @@ var app = (function () {
     }
     function element(name) {
         return document.createElement(name);
+    }
+    function svg_element(name) {
+        return document.createElementNS('http://www.w3.org/2000/svg', name);
     }
     function text(data) {
         return document.createTextNode(data);
@@ -69,10 +85,57 @@ var app = (function () {
     function set_input_value(input, value) {
         input.value = value == null ? '' : value;
     }
+    function set_style(node, key, value, important) {
+        if (value == null) {
+            node.style.removeProperty(key);
+        }
+        else {
+            node.style.setProperty(key, value, important ? 'important' : '');
+        }
+    }
     function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
         const e = document.createEvent('CustomEvent');
         e.initCustomEvent(type, bubbles, cancelable, detail);
         return e;
+    }
+    class HtmlTag {
+        constructor(is_svg = false) {
+            this.is_svg = false;
+            this.is_svg = is_svg;
+            this.e = this.n = null;
+        }
+        c(html) {
+            this.h(html);
+        }
+        m(html, target, anchor = null) {
+            if (!this.e) {
+                if (this.is_svg)
+                    this.e = svg_element(target.nodeName);
+                /** #7364  target for <template> may be provided as #document-fragment(11) */
+                else
+                    this.e = element((target.nodeType === 11 ? 'TEMPLATE' : target.nodeName));
+                this.t = target.tagName !== 'TEMPLATE' ? target : target.content;
+                this.c(html);
+            }
+            this.i(anchor);
+        }
+        h(html) {
+            this.e.innerHTML = html;
+            this.n = Array.from(this.e.nodeName === 'TEMPLATE' ? this.e.content.childNodes : this.e.childNodes);
+        }
+        i(anchor) {
+            for (let i = 0; i < this.n.length; i += 1) {
+                insert(this.t, this.n[i], anchor);
+            }
+        }
+        p(html) {
+            this.d();
+            this.h(html);
+            this.i(this.a);
+        }
+        d() {
+            this.n.forEach(detach);
+        }
     }
 
     let current_component;
@@ -449,31 +512,25 @@ var app = (function () {
 
     const file$1 = "src/lib/History.svelte";
 
-    function get_each_context(ctx, list, i) {
+    function get_each_context$1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[2] = list[i];
+    	child_ctx[1] = list[i];
     	return child_ctx;
     }
 
-    // (11:6) {#each dummyList as item}
-    function create_each_block(ctx) {
+    // (21:2) {:else}
+    function create_else_block(ctx) {
     	let div;
-    	let t0;
-    	let t1_value = /*item*/ ctx[2] + "";
-    	let t1;
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			t0 = text("📄   ");
-    			t1 = text(t1_value);
-    			attr_dev(div, "class", "history-item");
-    			add_location(div, file$1, 11, 8, 352);
+    			div.textContent = "It's quiet here...";
+    			attr_dev(div, "class", "empty-message");
+    			add_location(div, file$1, 21, 4, 376);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
-    			append_dev(div, t0);
-    			append_dev(div, t1);
     		},
     		p: noop,
     		d: function destroy(detaching) {
@@ -483,77 +540,61 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_each_block.name,
-    		type: "each",
-    		source: "(11:6) {#each dummyList as item}",
+    		id: create_else_block.name,
+    		type: "else",
+    		source: "(21:2) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$1(ctx) {
-    	let div2;
-    	let div0;
-    	let t1;
-    	let div1;
-    	let each_value = /*dummyList*/ ctx[1];
+    // (15:2) {#if hasItems(historyList)}
+    function create_if_block$1(ctx) {
+    	let div;
+    	let each_value = /*historyList*/ ctx[0];
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
     	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
     	}
 
     	const block = {
     		c: function create() {
-    			div2 = element("div");
-    			div0 = element("div");
-    			div0.textContent = `${/*history*/ ctx[0]}`;
-    			t1 = space();
-    			div1 = element("div");
+    			div = element("div");
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
 
-    			attr_dev(div0, "class", "title");
-    			add_location(div0, file$1, 8, 2, 244);
-    			attr_dev(div1, "class", "list-container");
-    			add_location(div1, file$1, 9, 4, 283);
-    			attr_dev(div2, "class", "wrapper");
-    			add_location(div2, file$1, 7, 0, 220);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    			attr_dev(div, "class", "list-container");
+    			add_location(div, file$1, 15, 4, 217);
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div2, anchor);
-    			append_dev(div2, div0);
-    			append_dev(div2, t1);
-    			append_dev(div2, div1);
+    			insert_dev(target, div, anchor);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				if (each_blocks[i]) {
-    					each_blocks[i].m(div1, null);
+    					each_blocks[i].m(div, null);
     				}
     			}
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*dummyList*/ 2) {
-    				each_value = /*dummyList*/ ctx[1];
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*historyList*/ 1) {
+    				each_value = /*historyList*/ ctx[0];
     				validate_each_argument(each_value);
     				let i;
 
     				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context(ctx, each_value, i);
+    					const child_ctx = get_each_context$1(ctx, each_value, i);
 
     					if (each_blocks[i]) {
     						each_blocks[i].p(child_ctx, dirty);
     					} else {
-    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i] = create_each_block$1(child_ctx);
     						each_blocks[i].c();
-    						each_blocks[i].m(div1, null);
+    						each_blocks[i].m(div, null);
     					}
     				}
 
@@ -564,11 +605,117 @@ var app = (function () {
     				each_blocks.length = each_value.length;
     			}
     		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			destroy_each(each_blocks, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$1.name,
+    		type: "if",
+    		source: "(15:2) {#if hasItems(historyList)}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (17:6) {#each historyList as item}
+    function create_each_block$1(ctx) {
+    	let div;
+    	let t0;
+    	let t1_value = /*item*/ ctx[1] + "";
+    	let t1;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			t0 = text("📄   ");
+    			t1 = text(t1_value);
+    			attr_dev(div, "class", "history-item");
+    			add_location(div, file$1, 17, 8, 288);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, t0);
+    			append_dev(div, t1);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*historyList*/ 1 && t1_value !== (t1_value = /*item*/ ctx[1] + "")) set_data_dev(t1, t1_value);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block$1.name,
+    		type: "each",
+    		source: "(17:6) {#each historyList as item}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
+    	let div1;
+    	let div0;
+    	let t1;
+    	let show_if;
+
+    	function select_block_type(ctx, dirty) {
+    		if (dirty & /*historyList*/ 1) show_if = null;
+    		if (show_if == null) show_if = !!hasItems(/*historyList*/ ctx[0]);
+    		if (show_if) return create_if_block$1;
+    		return create_else_block;
+    	}
+
+    	let current_block_type = select_block_type(ctx, -1);
+    	let if_block = current_block_type(ctx);
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			div0 = element("div");
+    			div0.textContent = "History";
+    			t1 = space();
+    			if_block.c();
+    			attr_dev(div0, "class", "title");
+    			add_location(div0, file$1, 12, 2, 149);
+    			attr_dev(div1, "class", "wrapper");
+    			add_location(div1, file$1, 11, 0, 125);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			append_dev(div1, t1);
+    			if_block.m(div1, null);
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (current_block_type === (current_block_type = select_block_type(ctx, dirty)) && if_block) {
+    				if_block.p(ctx, dirty);
+    			} else {
+    				if_block.d(1);
+    				if_block = current_block_type(ctx);
+
+    				if (if_block) {
+    					if_block.c();
+    					if_block.m(div1, null);
+    				}
+    			}
+    		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div2);
-    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(div1);
+    			if_block.d();
     		}
     	};
 
@@ -583,42 +730,41 @@ var app = (function () {
     	return block;
     }
 
+    function hasItems(list) {
+    	return list && list.length > 0;
+    }
+
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('History', slots, []);
-    	let history = "History";
-
-    	let dummyList = [
-    		"How many invoices do I have?",
-    		"Who are my biggest competitors?",
-    		"What does my insurance protect me against?",
-    		"When is my next payment due?"
-    	];
-
-    	const writable_props = [];
+    	let { historyList = [] } = $$props;
+    	const writable_props = ['historyList'];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<History> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({ history, dummyList });
+    	$$self.$$set = $$props => {
+    		if ('historyList' in $$props) $$invalidate(0, historyList = $$props.historyList);
+    	};
+
+    	$$self.$capture_state = () => ({ historyList, hasItems });
 
     	$$self.$inject_state = $$props => {
-    		if ('history' in $$props) $$invalidate(0, history = $$props.history);
-    		if ('dummyList' in $$props) $$invalidate(1, dummyList = $$props.dummyList);
+    		if ('historyList' in $$props) $$invalidate(0, historyList = $$props.historyList);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [history, dummyList];
+    	return [historyList];
     }
 
     class History extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { historyList: 0 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -627,17 +773,164 @@ var app = (function () {
     			id: create_fragment$1.name
     		});
     	}
+
+    	get historyList() {
+    		throw new Error("<History>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set historyList(value) {
+    		throw new Error("<History>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src/App.svelte generated by Svelte v3.59.1 */
+
+    const { console: console_1 } = globals;
     const file = "src/App.svelte";
+
+    function get_each_context(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[24] = list[i];
+    	return child_ctx;
+    }
+
+    // (242:6) {#if showInputBox}
+    function create_if_block(ctx) {
+    	let div;
+    	let input;
+    	let t0;
+    	let button;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			input = element("input");
+    			t0 = space();
+    			button = element("button");
+    			button.textContent = "Sync";
+    			attr_dev(input, "type", "text");
+    			attr_dev(input, "placeholder", "Share link to a folder...");
+    			add_location(input, file, 243, 8, 6460);
+    			add_location(button, file, 244, 8, 6552);
+    			add_location(div, file, 242, 6, 6446);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, input);
+    			set_input_value(input, /*urlGoogle*/ ctx[7]);
+    			append_dev(div, t0);
+    			append_dev(div, button);
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[15]),
+    					listen_dev(button, "click", /*uploadGoogle*/ ctx[10], false, false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*urlGoogle*/ 128 && input.value !== /*urlGoogle*/ ctx[7]) {
+    				set_input_value(input, /*urlGoogle*/ ctx[7]);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(242:6) {#if showInputBox}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (253:8) {#each blocksList as block}
+    function create_each_block(ctx) {
+    	let div1;
+    	let div0;
+    	let html_tag;
+    	let raw_value = /*block*/ ctx[24].tag + "";
+    	let t0;
+    	let p0;
+    	let t1_value = /*block*/ ctx[24].document_name + "";
+    	let t1;
+    	let t2;
+    	let p1;
+    	let t3_value = /*block*/ ctx[24].block + "";
+    	let t3;
+    	let t4;
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			div0 = element("div");
+    			html_tag = new HtmlTag(false);
+    			t0 = space();
+    			p0 = element("p");
+    			t1 = text(t1_value);
+    			t2 = space();
+    			p1 = element("p");
+    			t3 = text(t3_value);
+    			t4 = space();
+    			html_tag.a = t0;
+    			attr_dev(p0, "class", "docname");
+    			add_location(p0, file, 256, 12, 6952);
+    			attr_dev(div0, "class", "title-tag");
+    			add_location(div0, file, 254, 10, 6885);
+    			add_location(p1, file, 258, 8, 7022);
+    			attr_dev(div1, "class", "wrapper-block");
+    			add_location(div1, file, 253, 8, 6847);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			html_tag.m(raw_value, div0);
+    			append_dev(div0, t0);
+    			append_dev(div0, p0);
+    			append_dev(p0, t1);
+    			append_dev(div1, t2);
+    			append_dev(div1, p1);
+    			append_dev(p1, t3);
+    			append_dev(div1, t4);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*blocksList*/ 8 && raw_value !== (raw_value = /*block*/ ctx[24].tag + "")) html_tag.p(raw_value);
+    			if (dirty & /*blocksList*/ 8 && t1_value !== (t1_value = /*block*/ ctx[24].document_name + "")) set_data_dev(t1, t1_value);
+    			if (dirty & /*blocksList*/ 8 && t3_value !== (t3_value = /*block*/ ctx[24].block + "")) set_data_dev(t3, t3_value);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div1);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block.name,
+    		type: "each",
+    		source: "(253:8) {#each blocksList as block}",
+    		ctx
+    	});
+
+    	return block;
+    }
 
     function create_fragment(ctx) {
     	let div0;
     	let history;
     	let t0;
-    	let div4;
-    	let div3;
+    	let div8;
+    	let div6;
     	let h1;
     	let t2;
     	let div2;
@@ -646,31 +939,57 @@ var app = (function () {
     	let t3;
     	let button;
     	let t5;
-    	let p0;
+    	let div5;
+    	let div3;
+    	let label0;
     	let t6;
-    	let t7;
-    	let p1;
-    	let t8;
-    	let t9;
-    	let h4;
-    	let t11;
-    	let form;
     	let input1;
+    	let t7;
+    	let div4;
+    	let label1;
+    	let img;
+    	let img_src_value;
+    	let t8;
+    	let input2;
+    	let t9;
+    	let t10;
+    	let p0;
+    	let t11;
     	let t12;
-    	let p2;
+    	let div7;
+    	let p1;
+    	let b;
     	let t13;
+    	let html_tag;
+    	let t14;
     	let current;
     	let mounted;
     	let dispose;
-    	history = new History({ $$inline: true });
+
+    	history = new History({
+    			props: {
+    				historyList: /*historylist*/ ctx[4],
+    				fetchResponse: /*fetchResponse*/ ctx[11]
+    			},
+    			$$inline: true
+    		});
+
+    	let if_block = /*showInputBox*/ ctx[6] && create_if_block(ctx);
+    	let each_value = /*blocksList*/ ctx[3];
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    	}
 
     	const block = {
     		c: function create() {
     			div0 = element("div");
     			create_component(history.$$.fragment);
     			t0 = space();
-    			div4 = element("div");
-    			div3 = element("div");
+    			div8 = element("div");
+    			div6 = element("div");
     			h1 = element("h1");
     			h1.textContent = "inhouse 🏠";
     			t2 = space();
@@ -681,48 +1000,82 @@ var app = (function () {
     			button = element("button");
     			button.textContent = "🔍";
     			t5 = space();
-    			p0 = element("p");
-    			t6 = text(/*indexedInfo*/ ctx[2]);
-    			t7 = space();
-    			p1 = element("p");
-    			t8 = text(/*responseValue*/ ctx[1]);
-    			t9 = space();
-    			h4 = element("h4");
-    			h4.textContent = "Upload new files";
-    			t11 = space();
-    			form = element("form");
+    			div5 = element("div");
+    			div3 = element("div");
+    			label0 = element("label");
+    			t6 = text("📥    Upload\n            ");
     			input1 = element("input");
+    			t7 = space();
+    			div4 = element("div");
+    			label1 = element("label");
+    			img = element("img");
+    			t8 = text("   Sync Drive\n            ");
+    			input2 = element("input");
+    			t9 = space();
+    			if (if_block) if_block.c();
+    			t10 = space();
+    			p0 = element("p");
+    			t11 = text(/*indexedInfo*/ ctx[2]);
     			t12 = space();
-    			p2 = element("p");
-    			t13 = text(/*message*/ ctx[3]);
+    			div7 = element("div");
+    			p1 = element("p");
+    			b = element("b");
+    			t13 = text(/*question*/ ctx[5]);
+    			html_tag = new HtmlTag(false);
+    			t14 = space();
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
     			attr_dev(div0, "class", "row");
-    			add_location(div0, file, 86, 0, 2055);
-    			add_location(h1, file, 92, 8, 2157);
+    			add_location(div0, file, 212, 0, 5252);
+    			add_location(h1, file, 218, 8, 5413);
     			attr_dev(input0, "placeholder", "Ask a question.");
     			attr_dev(input0, "class", "searchbar");
     			attr_dev(input0, "type", "text");
-    			add_location(input0, file, 95, 12, 2268);
+    			add_location(input0, file, 221, 12, 5524);
     			attr_dev(button, "class", "submit-button");
-    			add_location(button, file, 96, 12, 2373);
+    			add_location(button, file, 222, 12, 5656);
     			attr_dev(div1, "class", "input-container");
-    			add_location(div1, file, 94, 10, 2226);
+    			add_location(div1, file, 220, 10, 5482);
     			attr_dev(div2, "class", "search-container");
-    			add_location(div2, file, 93, 8, 2185);
-    			attr_dev(p0, "class", "custom-i");
-    			add_location(p0, file, 99, 8, 2475);
-    			attr_dev(div3, "class", "top-bar");
-    			add_location(div3, file, 91, 6, 2127);
-    			add_location(p1, file, 102, 6, 2533);
-    			add_location(h4, file, 103, 6, 2562);
+    			add_location(div2, file, 219, 8, 5441);
+    			attr_dev(input1, "id", "fileInput");
     			attr_dev(input1, "type", "file");
+    			set_style(input1, "display", "none");
     			input1.multiple = true;
-    			add_location(input1, file, 105, 8, 2663);
-    			attr_dev(form, "onsubmit", "return false");
-    			attr_dev(form, "enctype", "multipart/form-data");
-    			add_location(form, file, 104, 6, 2594);
-    			add_location(p2, file, 107, 6, 2743);
-    			attr_dev(div4, "class", "row-bar");
-    			add_location(div4, file, 90, 4, 2099);
+    			add_location(input1, file, 230, 12, 5925);
+    			attr_dev(label0, "for", "fileInput");
+    			attr_dev(label0, "class", "upload-button");
+    			add_location(label0, file, 228, 10, 5835);
+    			attr_dev(div3, "class", "upload-button-container");
+    			add_location(div3, file, 227, 8, 5787);
+    			if (!src_url_equal(img.src, img_src_value = "https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg")) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "alt", "google drive icon");
+    			add_location(img, file, 236, 12, 6154);
+    			attr_dev(input2, "type", "text");
+    			set_style(input2, "display", "none");
+    			add_location(input2, file, 237, 12, 6308);
+    			attr_dev(label1, "class", "gdrive-button");
+    			add_location(label1, file, 235, 10, 6112);
+    			attr_dev(div4, "class", "gdrive-button-container");
+    			add_location(div4, file, 234, 8, 6064);
+    			attr_dev(div5, "class", "uploads");
+    			add_location(div5, file, 226, 8, 5757);
+    			attr_dev(p0, "class", "custom-i");
+    			add_location(p0, file, 247, 8, 6629);
+    			attr_dev(div6, "class", "top-bar");
+    			add_location(div6, file, 217, 6, 5383);
+    			attr_dev(b, "class", "query");
+    			add_location(b, file, 251, 28, 6746);
+    			html_tag.a = null;
+    			attr_dev(p1, "class", "response");
+    			add_location(p1, file, 251, 8, 6726);
+    			attr_dev(div7, "class", "wrapper-response");
+    			add_location(div7, file, 250, 6, 6687);
+    			attr_dev(div8, "class", "row-bar");
+    			add_location(div8, file, 216, 4, 5355);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -731,50 +1084,110 @@ var app = (function () {
     			insert_dev(target, div0, anchor);
     			mount_component(history, div0, null);
     			insert_dev(target, t0, anchor);
-    			insert_dev(target, div4, anchor);
-    			append_dev(div4, div3);
-    			append_dev(div3, h1);
-    			append_dev(div3, t2);
-    			append_dev(div3, div2);
+    			insert_dev(target, div8, anchor);
+    			append_dev(div8, div6);
+    			append_dev(div6, h1);
+    			append_dev(div6, t2);
+    			append_dev(div6, div2);
     			append_dev(div2, div1);
     			append_dev(div1, input0);
     			set_input_value(input0, /*inputValue*/ ctx[0]);
     			append_dev(div1, t3);
     			append_dev(div1, button);
-    			append_dev(div3, t5);
-    			append_dev(div3, p0);
-    			append_dev(p0, t6);
-    			append_dev(div4, t7);
-    			append_dev(div4, p1);
-    			append_dev(p1, t8);
-    			append_dev(div4, t9);
-    			append_dev(div4, h4);
-    			append_dev(div4, t11);
-    			append_dev(div4, form);
-    			append_dev(form, input1);
-    			append_dev(div4, t12);
-    			append_dev(div4, p2);
-    			append_dev(p2, t13);
+    			append_dev(div6, t5);
+    			append_dev(div6, div5);
+    			append_dev(div5, div3);
+    			append_dev(div3, label0);
+    			append_dev(label0, t6);
+    			append_dev(label0, input1);
+    			append_dev(div5, t7);
+    			append_dev(div5, div4);
+    			append_dev(div4, label1);
+    			append_dev(label1, img);
+    			append_dev(label1, t8);
+    			append_dev(label1, input2);
+    			append_dev(div6, t9);
+    			if (if_block) if_block.m(div6, null);
+    			append_dev(div6, t10);
+    			append_dev(div6, p0);
+    			append_dev(p0, t11);
+    			append_dev(div8, t12);
+    			append_dev(div8, div7);
+    			append_dev(div7, p1);
+    			append_dev(p1, b);
+    			append_dev(b, t13);
+    			html_tag.m(/*responseValue*/ ctx[1], p1);
+    			append_dev(div7, t14);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				if (each_blocks[i]) {
+    					each_blocks[i].m(div7, null);
+    				}
+    			}
+
     			current = true;
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[6]),
-    					listen_dev(button, "click", /*sendData*/ ctx[4], false, false, false, false),
-    					listen_dev(input1, "change", /*handleFileChange*/ ctx[5], false, false, false, false)
+    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[14]),
+    					listen_dev(input0, "keydown", /*handleKeyDown*/ ctx[12], false, false, false, false),
+    					listen_dev(button, "click", /*search*/ ctx[8], false, false, false, false),
+    					listen_dev(input1, "change", /*handleFileChange*/ ctx[13], false, false, false, false),
+    					listen_dev(input2, "click", /*askUrl*/ ctx[9], false, false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, [dirty]) {
+    			const history_changes = {};
+    			if (dirty & /*historylist*/ 16) history_changes.historyList = /*historylist*/ ctx[4];
+    			history.$set(history_changes);
+
     			if (dirty & /*inputValue*/ 1 && input0.value !== /*inputValue*/ ctx[0]) {
     				set_input_value(input0, /*inputValue*/ ctx[0]);
     			}
 
-    			if (!current || dirty & /*indexedInfo*/ 4) set_data_dev(t6, /*indexedInfo*/ ctx[2]);
-    			if (!current || dirty & /*responseValue*/ 2) set_data_dev(t8, /*responseValue*/ ctx[1]);
-    			if (!current || dirty & /*message*/ 8) set_data_dev(t13, /*message*/ ctx[3]);
+    			if (/*showInputBox*/ ctx[6]) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+    				} else {
+    					if_block = create_if_block(ctx);
+    					if_block.c();
+    					if_block.m(div6, t10);
+    				}
+    			} else if (if_block) {
+    				if_block.d(1);
+    				if_block = null;
+    			}
+
+    			if (!current || dirty & /*indexedInfo*/ 4) set_data_dev(t11, /*indexedInfo*/ ctx[2]);
+    			if (!current || dirty & /*question*/ 32) set_data_dev(t13, /*question*/ ctx[5]);
+    			if (!current || dirty & /*responseValue*/ 2) html_tag.p(/*responseValue*/ ctx[1]);
+
+    			if (dirty & /*blocksList*/ 8) {
+    				each_value = /*blocksList*/ ctx[3];
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(div7, null);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value.length;
+    			}
     		},
     		i: function intro(local) {
     			if (current) return;
@@ -789,7 +1202,9 @@ var app = (function () {
     			if (detaching) detach_dev(div0);
     			destroy_component(history);
     			if (detaching) detach_dev(t0);
-    			if (detaching) detach_dev(div4);
+    			if (detaching) detach_dev(div8);
+    			if (if_block) if_block.d();
+    			destroy_each(each_blocks, detaching);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -806,23 +1221,65 @@ var app = (function () {
     	return block;
     }
 
-    async function getUploadedItems() {
-    	const response = await fetch("./get_uploaded_count");
-    	const data = await response.text();
-    	return data;
+    function scrollToNextSpan(spanId) {
+    	const spanElements = document.getElementsByClassName('one');
+    	const currentIndex = Array.from(spanElements).findIndex(span => span.id === spanId);
+
+    	if (currentIndex !== -1) {
+    		const nextIndex = currentIndex + 1;
+
+    		if (nextIndex < spanElements.length) {
+    			const nextSpan = spanElements[nextIndex];
+    			nextSpan.scrollIntoView({ behavior: 'smooth' });
+    		}
+    	}
     }
 
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let inputValue = "";
-    	let responseValue = "";
+    	let responseValue = "Ready to take your questions!";
     	let indexedInfo = "";
+    	let token = "";
+    	let blocksList = [];
+    	let historylist = [];
+    	let fileInput;
+    	let question = "";
+    	let showInputBox = false;
+    	let urlGoogle;
+
+    	async function getHistoryList() {
+    		const response = await fetch(`./get_history_list/${token}`);
+    		const data = await response.json();
+
+    		if (response.ok) {
+    			$$invalidate(4, historylist = data.queries);
+    		} else {
+    			$$invalidate(4, historylist = ["Could not load history"]);
+    		}
+    	}
+
+    	async function getTokenFromUrl() {
+    		const path = window.location.pathname;
+    		const parts = path.split("/");
+    		const lastPart = parts[parts.length - 1];
+    		token = lastPart;
+    	}
+
+    	async function getUploadedItems() {
+    		const response = await fetch(`./get_uploaded_count/${token}`);
+    		const data = await response.text();
+    		return data;
+    	}
 
     	async function fetchData() {
     		const count = await getUploadedItems();
 
-    		if (count === "1" || count === "0") {
+    		if (count === "0") {
+    			$$invalidate(2, indexedInfo = "Upload files to get started!");
+    			return;
+    		} else if (count === "1") {
     			$$invalidate(2, indexedInfo = count + " file indexed");
     			return;
     		}
@@ -830,29 +1287,62 @@ var app = (function () {
     		$$invalidate(2, indexedInfo = count + " files indexed.");
     	}
 
-    	async function sendData() {
+    	async function search() {
     		if (inputValue === "") {
     			$$invalidate(1, responseValue = "No text :(");
     			return;
+    		} else if (indexedInfo === "Upload files to get started!") {
+    			$$invalidate(1, responseValue = "Upload files first");
+    			return;
     		}
 
-    		$$invalidate(1, responseValue = "Loading...");
+    		$$invalidate(5, question = "");
+    		$$invalidate(1, responseValue = "Waiting for the LLM...");
+    		$$invalidate(3, blocksList = []);
 
-    		const response = await fetch('/search', {
+    		const response = await fetch(`./search/${token}`, {
     			method: 'POST',
     			headers: { 'Content-Type': 'application/json' },
     			body: JSON.stringify({ value: inputValue })
     		});
 
     		const data = await response.json();
+    		console.log(data);
+    		$$invalidate(5, question = "Q: " + inputValue);
     		$$invalidate(1, responseValue = data.result);
+    		$$invalidate(3, blocksList = data.blocks);
+    		console.log(blocksList);
+    		await getHistoryList();
     	}
 
-    	let fileInput;
-    	let message = "";
+    	async function askUrl() {
+    		$$invalidate(6, showInputBox = true);
+    	}
+
+    	async function uploadGoogle() {
+    		$$invalidate(6, showInputBox = false);
+
+    		if (urlGoogle === "") {
+    			$$invalidate(2, indexedInfo = "URL is empty :(");
+    			return;
+    		}
+
+    		$$invalidate(2, indexedInfo = "Loading your Google Drive folder...");
+
+    		const response = await fetch(`./upload_google_file/${token}`, {
+    			method: 'POST',
+    			headers: { 'Content-Type': 'application/json' },
+    			body: JSON.stringify({ url: urlGoogle })
+    		});
+
+    		const data = await response.json();
+    		const count = await getUploadedItems();
+    		$$invalidate(2, indexedInfo = data.Message + " " + count + " indexed.");
+    		await getHistoryList();
+    	}
 
     	async function uploadFile() {
-    		$$invalidate(3, message = "Uploading...");
+    		$$invalidate(2, indexedInfo = "Uploading...");
     		const formData = new FormData();
     		const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
     		let unsupportedFiles = [];
@@ -866,16 +1356,38 @@ var app = (function () {
     			formData.append('files[]', fileInput.files[i]);
     		}
 
-    		const response = await fetch('/upload_file', { method: 'POST', body: formData });
+    		const response = await fetch(`./upload_file/${token}`, { method: 'POST', body: formData });
 
     		if (unsupportedFiles.length > 0) {
     			const warningMessage = `Could not upload the following files. Image type files are not allowed: ${unsupportedFiles.join(', ')}`;
     			alert(warningMessage);
     		}
 
-    		const data = await response.json();
-    		$$invalidate(3, message = data.Message);
+    		await response.json();
     		fetchData();
+    	}
+
+    	async function fetchResponse(query) {
+    		const response = await fetch(`./get_response_from_query/${token}`, {
+    			method: 'POST',
+    			headers: { 'Content-Type': 'application/json' },
+    			body: JSON.stringify({ value: query })
+    		});
+
+    		if (response.ok) {
+    			const data = await response.json();
+    			$$invalidate(1, responseValue = data.result);
+    			$$invalidate(5, question = "Q: " + data.query);
+    			$$invalidate(3, blocksList = data.blocks);
+    		} else {
+    			$$invalidate(1, responseValue = "Error fetching response.");
+    		}
+    	}
+
+    	function handleKeyDown(event) {
+    		if (event.key === "Enter") {
+    			search();
+    		}
     	}
 
     	function handleFileChange(event) {
@@ -883,19 +1395,43 @@ var app = (function () {
     		uploadFile();
     	}
 
-    	onMount(() => {
-    		fetchData();
+    	async function syncGoogle() {
+    		$$invalidate(2, indexedInfo = "Syncing with Google Drive...");
+    		const response = await fetch(`https://inhouse.up.railway.app/app/sync_google/${token}`);
+    		const data = await response.json();
+
+    		if (data.Message === "X") {
+    			console.log("here");
+    			await fetchData();
+    		} else {
+    			const count = await getUploadedItems();
+    			$$invalidate(2, indexedInfo = data.Message + ". " + count + " indexed.");
+    		}
+
+    		return data;
+    	}
+
+    	onMount(async () => {
+    		await getTokenFromUrl();
+    		await fetchData();
+    		await getHistoryList();
+    		await syncGoogle();
     	});
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<App> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
     	function input0_input_handler() {
     		inputValue = this.value;
     		$$invalidate(0, inputValue);
+    	}
+
+    	function input_input_handler() {
+    		urlGoogle = this.value;
+    		$$invalidate(7, urlGoogle);
     	}
 
     	$$self.$capture_state = () => ({
@@ -904,21 +1440,39 @@ var app = (function () {
     		inputValue,
     		responseValue,
     		indexedInfo,
+    		token,
+    		blocksList,
+    		historylist,
+    		fileInput,
+    		question,
+    		showInputBox,
+    		urlGoogle,
+    		getHistoryList,
+    		getTokenFromUrl,
     		getUploadedItems,
     		fetchData,
-    		sendData,
-    		fileInput,
-    		message,
+    		search,
+    		askUrl,
+    		uploadGoogle,
     		uploadFile,
-    		handleFileChange
+    		fetchResponse,
+    		handleKeyDown,
+    		handleFileChange,
+    		syncGoogle,
+    		scrollToNextSpan
     	});
 
     	$$self.$inject_state = $$props => {
     		if ('inputValue' in $$props) $$invalidate(0, inputValue = $$props.inputValue);
     		if ('responseValue' in $$props) $$invalidate(1, responseValue = $$props.responseValue);
     		if ('indexedInfo' in $$props) $$invalidate(2, indexedInfo = $$props.indexedInfo);
+    		if ('token' in $$props) token = $$props.token;
+    		if ('blocksList' in $$props) $$invalidate(3, blocksList = $$props.blocksList);
+    		if ('historylist' in $$props) $$invalidate(4, historylist = $$props.historylist);
     		if ('fileInput' in $$props) fileInput = $$props.fileInput;
-    		if ('message' in $$props) $$invalidate(3, message = $$props.message);
+    		if ('question' in $$props) $$invalidate(5, question = $$props.question);
+    		if ('showInputBox' in $$props) $$invalidate(6, showInputBox = $$props.showInputBox);
+    		if ('urlGoogle' in $$props) $$invalidate(7, urlGoogle = $$props.urlGoogle);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -929,10 +1483,19 @@ var app = (function () {
     		inputValue,
     		responseValue,
     		indexedInfo,
-    		message,
-    		sendData,
+    		blocksList,
+    		historylist,
+    		question,
+    		showInputBox,
+    		urlGoogle,
+    		search,
+    		askUrl,
+    		uploadGoogle,
+    		fetchResponse,
+    		handleKeyDown,
     		handleFileChange,
-    		input0_input_handler
+    		input0_input_handler,
+    		input_input_handler
     	];
     }
 
