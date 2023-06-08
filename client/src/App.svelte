@@ -63,7 +63,7 @@
     responseValue = "Waiting for the LLM...";
     blocksList = [];
 
-    const response = await fetch(`./search/${token}`, {
+    const response = await fetch(`https://inhouse-test.up.railway.app/app/search/${token}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
