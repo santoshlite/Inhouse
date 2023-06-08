@@ -1,6 +1,7 @@
 
 <script>
   export let historyList = [];
+  export let fetchResponse;
 
   function hasItems(list) {
     return list && list.length > 0;
@@ -15,7 +16,7 @@
   {#if hasItems(historyList)}
     <div class="list-container">
       {#each historyList as item}
-        <div class="history-item">📄 &nbsp; {item}</div>
+        <div class="history-item" on:click={fetchResponse(item)}>📄 &nbsp; {item}</div>
       {/each}
     </div>
   {:else}
