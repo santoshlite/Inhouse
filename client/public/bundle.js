@@ -1,4 +1,3 @@
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
 
@@ -514,11 +513,11 @@ var app = (function () {
 
     function get_each_context$1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[1] = list[i];
+    	child_ctx[2] = list[i];
     	return child_ctx;
     }
 
-    // (21:2) {:else}
+    // (22:2) {:else}
     function create_else_block(ctx) {
     	let div;
 
@@ -527,7 +526,7 @@ var app = (function () {
     			div = element("div");
     			div.textContent = "It's quiet here...";
     			attr_dev(div, "class", "empty-message");
-    			add_location(div, file$1, 21, 4, 376);
+    			add_location(div, file$1, 22, 4, 435);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -542,14 +541,14 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(21:2) {:else}",
+    		source: "(22:2) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (15:2) {#if hasItems(historyList)}
+    // (16:2) {#if hasItems(historyList)}
     function create_if_block$1(ctx) {
     	let div;
     	let each_value = /*historyList*/ ctx[0];
@@ -569,7 +568,7 @@ var app = (function () {
     			}
 
     			attr_dev(div, "class", "list-container");
-    			add_location(div, file$1, 15, 4, 217);
+    			add_location(div, file$1, 16, 4, 245);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -581,7 +580,7 @@ var app = (function () {
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*historyList*/ 1) {
+    			if (dirty & /*fetchResponse, historyList*/ 3) {
     				each_value = /*historyList*/ ctx[0];
     				validate_each_argument(each_value);
     				let i;
@@ -615,19 +614,21 @@ var app = (function () {
     		block,
     		id: create_if_block$1.name,
     		type: "if",
-    		source: "(15:2) {#if hasItems(historyList)}",
+    		source: "(16:2) {#if hasItems(historyList)}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (17:6) {#each historyList as item}
+    // (18:6) {#each historyList as item}
     function create_each_block$1(ctx) {
     	let div;
     	let t0;
-    	let t1_value = /*item*/ ctx[1] + "";
+    	let t1_value = /*item*/ ctx[2] + "";
     	let t1;
+    	let mounted;
+    	let dispose;
 
     	const block = {
     		c: function create() {
@@ -635,18 +636,37 @@ var app = (function () {
     			t0 = text("📄   ");
     			t1 = text(t1_value);
     			attr_dev(div, "class", "history-item");
-    			add_location(div, file$1, 17, 8, 288);
+    			add_location(div, file$1, 18, 8, 316);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, t0);
     			append_dev(div, t1);
+
+    			if (!mounted) {
+    				dispose = listen_dev(
+    					div,
+    					"click",
+    					function () {
+    						if (is_function(/*fetchResponse*/ ctx[1](/*item*/ ctx[2]))) /*fetchResponse*/ ctx[1](/*item*/ ctx[2]).apply(this, arguments);
+    					},
+    					false,
+    					false,
+    					false,
+    					false
+    				);
+
+    				mounted = true;
+    			}
     		},
-    		p: function update(ctx, dirty) {
-    			if (dirty & /*historyList*/ 1 && t1_value !== (t1_value = /*item*/ ctx[1] + "")) set_data_dev(t1, t1_value);
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+    			if (dirty & /*historyList*/ 1 && t1_value !== (t1_value = /*item*/ ctx[2] + "")) set_data_dev(t1, t1_value);
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
@@ -654,7 +674,7 @@ var app = (function () {
     		block,
     		id: create_each_block$1.name,
     		type: "each",
-    		source: "(17:6) {#each historyList as item}",
+    		source: "(18:6) {#each historyList as item}",
     		ctx
     	});
 
@@ -685,9 +705,9 @@ var app = (function () {
     			t1 = space();
     			if_block.c();
     			attr_dev(div0, "class", "title");
-    			add_location(div0, file$1, 12, 2, 149);
+    			add_location(div0, file$1, 13, 2, 177);
     			attr_dev(div1, "class", "wrapper");
-    			add_location(div1, file$1, 11, 0, 125);
+    			add_location(div1, file$1, 12, 0, 153);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -738,7 +758,15 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('History', slots, []);
     	let { historyList = [] } = $$props;
-    	const writable_props = ['historyList'];
+    	let { fetchResponse } = $$props;
+
+    	$$self.$$.on_mount.push(function () {
+    		if (fetchResponse === undefined && !('fetchResponse' in $$props || $$self.$$.bound[$$self.$$.props['fetchResponse']])) {
+    			console.warn("<History> was created without expected prop 'fetchResponse'");
+    		}
+    	});
+
+    	const writable_props = ['historyList', 'fetchResponse'];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<History> was created with unknown prop '${key}'`);
@@ -746,25 +774,27 @@ var app = (function () {
 
     	$$self.$$set = $$props => {
     		if ('historyList' in $$props) $$invalidate(0, historyList = $$props.historyList);
+    		if ('fetchResponse' in $$props) $$invalidate(1, fetchResponse = $$props.fetchResponse);
     	};
 
-    	$$self.$capture_state = () => ({ historyList, hasItems });
+    	$$self.$capture_state = () => ({ historyList, fetchResponse, hasItems });
 
     	$$self.$inject_state = $$props => {
     		if ('historyList' in $$props) $$invalidate(0, historyList = $$props.historyList);
+    		if ('fetchResponse' in $$props) $$invalidate(1, fetchResponse = $$props.fetchResponse);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [historyList];
+    	return [historyList, fetchResponse];
     }
 
     class History extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { historyList: 0 });
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { historyList: 0, fetchResponse: 1 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -779,6 +809,14 @@ var app = (function () {
     	}
 
     	set historyList(value) {
+    		throw new Error("<History>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get fetchResponse() {
+    		throw new Error("<History>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set fetchResponse(value) {
     		throw new Error("<History>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -812,9 +850,9 @@ var app = (function () {
     			button.textContent = "Sync";
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", "Share link to a folder...");
-    			add_location(input, file, 243, 8, 6460);
-    			add_location(button, file, 244, 8, 6552);
-    			add_location(div, file, 242, 6, 6446);
+    			add_location(input, file, 243, 8, 6498);
+    			add_location(button, file, 244, 8, 6590);
+    			add_location(div, file, 242, 6, 6484);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -885,12 +923,12 @@ var app = (function () {
     			t4 = space();
     			html_tag.a = t0;
     			attr_dev(p0, "class", "docname");
-    			add_location(p0, file, 256, 12, 6952);
+    			add_location(p0, file, 256, 12, 6990);
     			attr_dev(div0, "class", "title-tag");
-    			add_location(div0, file, 254, 10, 6885);
-    			add_location(p1, file, 258, 8, 7022);
+    			add_location(div0, file, 254, 10, 6923);
+    			add_location(p1, file, 258, 8, 7060);
     			attr_dev(div1, "class", "wrapper-block");
-    			add_location(div1, file, 253, 8, 6847);
+    			add_location(div1, file, 253, 8, 6885);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -1029,53 +1067,53 @@ var app = (function () {
     			}
 
     			attr_dev(div0, "class", "row");
-    			add_location(div0, file, 212, 0, 5252);
-    			add_location(h1, file, 218, 8, 5413);
+    			add_location(div0, file, 212, 0, 5290);
+    			add_location(h1, file, 218, 8, 5451);
     			attr_dev(input0, "placeholder", "Ask a question.");
     			attr_dev(input0, "class", "searchbar");
     			attr_dev(input0, "type", "text");
-    			add_location(input0, file, 221, 12, 5524);
+    			add_location(input0, file, 221, 12, 5562);
     			attr_dev(button, "class", "submit-button");
-    			add_location(button, file, 222, 12, 5656);
+    			add_location(button, file, 222, 12, 5694);
     			attr_dev(div1, "class", "input-container");
-    			add_location(div1, file, 220, 10, 5482);
+    			add_location(div1, file, 220, 10, 5520);
     			attr_dev(div2, "class", "search-container");
-    			add_location(div2, file, 219, 8, 5441);
+    			add_location(div2, file, 219, 8, 5479);
     			attr_dev(input1, "id", "fileInput");
     			attr_dev(input1, "type", "file");
     			set_style(input1, "display", "none");
     			input1.multiple = true;
-    			add_location(input1, file, 230, 12, 5925);
+    			add_location(input1, file, 230, 12, 5963);
     			attr_dev(label0, "for", "fileInput");
     			attr_dev(label0, "class", "upload-button");
-    			add_location(label0, file, 228, 10, 5835);
+    			add_location(label0, file, 228, 10, 5873);
     			attr_dev(div3, "class", "upload-button-container");
-    			add_location(div3, file, 227, 8, 5787);
+    			add_location(div3, file, 227, 8, 5825);
     			if (!src_url_equal(img.src, img_src_value = "https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "google drive icon");
-    			add_location(img, file, 236, 12, 6154);
+    			add_location(img, file, 236, 12, 6192);
     			attr_dev(input2, "type", "text");
     			set_style(input2, "display", "none");
-    			add_location(input2, file, 237, 12, 6308);
+    			add_location(input2, file, 237, 12, 6346);
     			attr_dev(label1, "class", "gdrive-button");
-    			add_location(label1, file, 235, 10, 6112);
+    			add_location(label1, file, 235, 10, 6150);
     			attr_dev(div4, "class", "gdrive-button-container");
-    			add_location(div4, file, 234, 8, 6064);
+    			add_location(div4, file, 234, 8, 6102);
     			attr_dev(div5, "class", "uploads");
-    			add_location(div5, file, 226, 8, 5757);
+    			add_location(div5, file, 226, 8, 5795);
     			attr_dev(p0, "class", "custom-i");
-    			add_location(p0, file, 247, 8, 6629);
+    			add_location(p0, file, 247, 8, 6667);
     			attr_dev(div6, "class", "top-bar");
-    			add_location(div6, file, 217, 6, 5383);
+    			add_location(div6, file, 217, 6, 5421);
     			attr_dev(b, "class", "query");
-    			add_location(b, file, 251, 28, 6746);
+    			add_location(b, file, 251, 28, 6784);
     			html_tag.a = null;
     			attr_dev(p1, "class", "response");
-    			add_location(p1, file, 251, 8, 6726);
+    			add_location(p1, file, 251, 8, 6764);
     			attr_dev(div7, "class", "wrapper-response");
-    			add_location(div7, file, 250, 6, 6687);
+    			add_location(div7, file, 250, 6, 6725);
     			attr_dev(div8, "class", "row-bar");
-    			add_location(div8, file, 216, 4, 5355);
+    			add_location(div8, file, 216, 4, 5393);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1300,7 +1338,7 @@ var app = (function () {
     		$$invalidate(1, responseValue = "Waiting for the LLM...");
     		$$invalidate(3, blocksList = []);
 
-    		const response = await fetch(`./search/${token}`, {
+    		const response = await fetch(`https://inhouse-test.up.railway.app/app/search/${token}`, {
     			method: 'POST',
     			headers: { 'Content-Type': 'application/json' },
     			body: JSON.stringify({ value: inputValue })
@@ -1397,7 +1435,7 @@ var app = (function () {
 
     	async function syncGoogle() {
     		$$invalidate(2, indexedInfo = "Syncing with Google Drive...");
-    		const response = await fetch(`https://inhouse-test.up.railway.app/app/sync_google/${token}`);
+    		const response = await fetch(`./sync_google/${token}`);
     		const data = await response.json();
 
     		if (data.Message === "X") {
