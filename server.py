@@ -57,6 +57,14 @@ db_history = client["userHistory"]
 
 # setting the collection for authentification
 token_email_collection = db["token_email_mapping"]
+
+@app.before_request
+def redirect_to_https():
+    # Check if the request is over HTTP
+    if request.scheme == 'http' and request.headers.get('X-Forwarded-Proto') != 'https':
+        # Redirect to the HTTPS version of the current URL
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
     
 @app.route("/")
 def base():
@@ -69,6 +77,7 @@ def svelte_app(token):
         return send_from_directory('client/public', 'index.html')
     else:
         return redirect('/')
+
 
 # method returns the closest matching directory
 def determine_closest_directory():
@@ -91,7 +100,7 @@ def determine_closest_directory():
 def page_not_found(e):
     closest_directory = determine_closest_directory()
     if closest_directory:
-        return redirect(closest_directory)
+       return redirect(closest_directory)
     else:
         return send_from_directory('client/public', '404.html')
     
@@ -500,20 +509,23 @@ def upload_google_file(token):
 #
 #
 
-@app.route('<token>/')
+@app.route('/app/sync_google/<token>/')
 def sync_google(token):
-
+    print("SYNC")
     # Get the email associated with the token
     email = get_email_from_token(token)
-
+    print("EMAIL" + email)
     user_data = db["token_email_mapping"].find_one({"email": email})
 
     if user_data and "folder_id" in user_data:
+            print("SOMETHING")
             folder_ids = user_data["folder_id"]
             for folder_id in folder_ids:
+                print(folder_id)
                 sync_google_files(token, folder_id)
             return jsonify({'Message': 'Google Drive synced successfullly'})
     else:
+        print("NOTHING")
         return jsonify({'Message': 'X'})
 
 
@@ -880,4 +892,4 @@ def search(token):
     return jsonify(output)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8000, ssl_context='adhoc')
