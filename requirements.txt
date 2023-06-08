@@ -10,4 +10,3 @@ pymongo==4.3.3
 sentence_transformers==2.2.2
 textract==1.6.5
 Jinja2==3.1.2
-Flask-Cors==3.0.10
