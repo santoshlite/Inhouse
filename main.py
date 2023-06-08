@@ -892,4 +892,4 @@ def search(token):
     return jsonify(output)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000, ssl_context=('cert.pem', 'key.pem'))
+    app.run(debug=True, port=8000, ssl_context='adhoc')
