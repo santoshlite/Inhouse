@@ -59,6 +59,7 @@
       return;
     }
     
+    question = "";
     responseValue = "Waiting for the LLM...";
     blocksList = [];
 
@@ -175,7 +176,6 @@
     indexedInfo = "Syncing with Google Drive...";
     const response = await fetch(`./sync_google/${token}`);
     const data = await response.json();
-    console.log(data)
     if(data.Message === "X"){
       console.log("here")
       await fetchData();
@@ -263,4 +263,6 @@
       </div>
 
     </div>
+    
+
     
