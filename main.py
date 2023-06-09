@@ -4,9 +4,6 @@ from sentence_transformers import SentenceTransformer, util
 from g_drive_service import GoogleDriveService
 import gdown
 import time
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
 import asyncio
 import pymongo
 from pymongo.mongo_client import MongoClient
@@ -457,8 +454,12 @@ async def upload_multiple_google_file(folder_id, collection):
 def extract_folder_id(url):
     pattern = r'/drive/folders/([\w-]+)\b'
     match = re.search(pattern, url)
+    print(match)
+    print("GROUP1" + match.group(1))
     if match and match.group(1):
         return match.group(1)
+    elif match and not match:
+        return match
     return None
 
 @app.route('/app/upload_google_file/<token>', methods=['POST'])
@@ -869,14 +870,14 @@ def search(token):
         if block and not block.endswith("."):
             block += " [...]"    
 
-        output["blocks"].append({"document_name": document_name, "block": block, "tag": f"<span class='{s}' id='span-{s}' onclick='scrollToNextSpan('{s}')'>[" + str(index+1) + "]</span>"})
+        output["blocks"].append({"document_name": document_name, "block": block, "tag": f"<span class='{s}' id='tag-{s}'>[" + str(index+1) + "]</span>"})
 
 
     # Mapping tags to order of appearance -> Re-indexing tags to start from 1
     tag_mapping = {}
     for i, (tag,s) in enumerate(zip(unique_tags, truncated_style), start=1):
         print(tag, i)
-        tag_mapping[tag] = f"<span class='{s}' id='span-{s}-nd'>[{str(i)}]</span>"
+        tag_mapping[tag] = f"<span class='{s}' onclick=\"scrollToElement('tag-{s}')\">[{str(i)}]</span>"
 
     final_response = re.sub(r"\[(\d+)\]", lambda match: "{}".format(tag_mapping.get(match.group(1), match.group(1))), response)
     
