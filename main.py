@@ -1,6 +1,5 @@
 from __future__ import print_function
 from flask import Flask, send_from_directory, request, jsonify, redirect, render_template
-from sentence_transformers import SentenceTransformer, util
 from g_drive_service import GoogleDriveService
 import gdown
 from flask_caching import Cache
@@ -27,7 +26,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 db_password = os.getenv('DB_PASSWORD')
 
 # Passage ranking model
-model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
 
 app = Flask(__name__)
 cache = Cache(app)
