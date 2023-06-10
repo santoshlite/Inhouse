@@ -57,14 +57,6 @@ db_history = client["userHistory"]
 
 # setting the collection for authentification
 token_email_collection = db["token_email_mapping"]
-
-@app.before_request
-def redirect_to_https():
-    # Check if the request is over HTTP
-    if request.scheme == 'http' and request.headers.get('X-Forwarded-Proto') != 'https':
-        # Redirect to the HTTPS version of the current URL
-        url = request.url.replace('http://', 'https://', 1)
-        return redirect(url, code=301)
     
 @app.route("/")
 def base():
