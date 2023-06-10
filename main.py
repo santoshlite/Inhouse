@@ -3,8 +3,8 @@ from flask import Flask, send_from_directory, request, jsonify, redirect, render
 from sentence_transformers import SentenceTransformer, util
 from g_drive_service import GoogleDriveService
 import gdown
+from flask_caching import Cache
 import time
-import asyncio
 import pymongo
 from pymongo.mongo_client import MongoClient
 import itertools
@@ -27,7 +27,10 @@ db_password = os.getenv('DB_PASSWORD')
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
 
 app = Flask(__name__)
+cache = Cache(app)
 
+app.config['CACHE_TYPE'] = 'simple'  
+app.config['CACHE_DEFAULT_TIMEOUT'] = 1000  # in seconds
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # setting the mongodb client
@@ -298,55 +301,42 @@ def file_to_blocks(content, k, docname):
 
     return blocks
 
-async def upload_single_file(file, collection):
+def upload_single_file(file, collection):
+    print("===================================== STEP 1: ENTERED UPLOAD SINGLE FILE! ===================================")
+    filename = file.filename
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
 
-        print("===================================== STEP 1: ENTERED UPLOAD SINGLE FILE! ===================================")
-        filename = file.filename
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        
-        text = textract.process("uploads/" + filename).decode('utf-8')
+    text = textract.process(file_path).decode('utf-8')
+    text = replace_tags(text)
 
-        text = replace_tags(text)
+    name, extension = os.path.splitext(filename)
+    text_file_path = os.path.join(app.config['UPLOAD_FOLDER'], name + ".txt")
 
-        name, extension = os.path.splitext(filename)
+    with open(text_file_path, "w") as text_file:
+        text_file.write(text)
 
-        file_path = "uploads/" + name + ".txt"
+    # Get the blocks from the file
+    blocks = file_to_blocks(text, 300, filename)
 
-        # Open the file in write mode
-        with open(file_path, "w") as file:
-            # Write the contents of the variable to the file
-            file.write(text)
+    # Remove the uploaded files
+    os.remove(file_path)
+    os.remove(text_file_path)
 
-        # Get the blocks from the file
-        blocks = file_to_blocks(text, 300, filename)
+    # Search for documents with the specified filename
+    fileExist = collection.find_one({"FileName": filename})
 
-        os.remove("uploads/" + filename)
-        os.remove(file_path)
+    # Check if a document was found
+    if fileExist is not None:
+        update_mongo_record(collection, filename + "#", text, blocks, "no need for modified time", "no need for version number")
+    else:
+        update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
 
-        # Search for documents with the specified filename
-        fileExist = collection.find_one({"FileName": filename})
+    print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
 
-        # Check if a document was found
-        if fileExist is not None:
-             update_mongo_record(collection, filename+"#", text, blocks, "no need for modified time", "no need for version number")
-        else:
-             update_mongo_record(collection, filename, text, blocks, "no need for modified time", "no need for version number")
-
-        print("===================================== STEP 2: UPDATED MONGO RECORD! ===================================")
-
-
-async def upload_multiple_file(collection):
-    files = request.files.getlist('files[]')
-
-    for file in files:
-        asyncio.ensure_future(upload_single_file(file, collection))
-    
-    print("===================================== GENERAL STEP 3: UPLOADED ALL FILE FROM FILES! ===================================")
 
 @app.route('/app/upload_file/<token>', methods=['POST'])
 def upload_file(token):
-
     # Get the email associated with the token
     email = get_email_from_token(token)
 
@@ -359,17 +349,16 @@ def upload_file(token):
     print("===================================== STEP 4: ENTERED UPLOAD_FILE ===================================")
     files = request.files.getlist('files[]')
     uploaded_files = []
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(upload_multiple_file(collection))
-    loop.close()
 
     for file in files:
+        print(file.filename)
+        upload_single_file(file, collection)
         filename = file.filename
         uploaded_files.append(filename)
 
     print("===================================== STEP 5: FINAL STAGE ===================================")
-    return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfullly'})
+    return jsonify({'Message': f'{len(uploaded_files)} Files uploaded successfully'})
+
 
 
 # This function gets all the files underneath a certain folder containing a given ID 
@@ -412,7 +401,7 @@ def get_files_in_folder(folder_id):
 
 
 # This function first download the file, then upload it to the mongo database
-async def upload_single_google_file(filename, list_of_info, collection):
+def upload_single_google_file(filename, list_of_info, collection):
 
     gdown.download("https://drive.google.com/uc?id="+ list_of_info[0], filename, quiet=False, fuzzy=True)
     
@@ -440,22 +429,11 @@ async def upload_single_google_file(filename, list_of_info, collection):
 
     # update the mongo record to store appropriate information
     update_mongo_record(collection, filename, text, blocks, list_of_info[1], list_of_info[2])
-
-
-async def upload_multiple_google_file(folder_id, collection):
-
-    name_info_dictionary = get_files_in_folder(folder_id)
-
-    # for loop that loops through the dictionary of google files and gives the file name and its corresponding list for each
-    for key, value in name_info_dictionary.items():
-        asyncio.ensure_future(upload_single_google_file(key, value, collection))
     
 
 def extract_folder_id(url):
     pattern = r'/drive/folders/([\w-]+)\b'
     match = re.search(pattern, url)
-    print(match)
-    print("GROUP1" + match.group(1))
     if match and match.group(1):
         return match.group(1)
     elif match and not match:
@@ -494,10 +472,12 @@ def upload_google_file(token):
 
 
     # upload_multiple_google_file(folder_id, collection)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(upload_multiple_google_file(folder_id,collection))
-    loop.close()
+  
+    name_info_dictionary = get_files_in_folder(folder_id)
+
+    # for loop that loops through the dictionary of google files and gives the file name and its corresponding list for each
+    for key, value in name_info_dictionary.items():
+        upload_single_google_file(key, value, collection)
 
 
     print("===================================== STEP 5: FINAL STAGE ===================================")
