@@ -30,9 +30,9 @@ db_password = os.getenv('DB_PASSWORD')
 app = Flask(__name__)
 cache = Cache(app)
 
-app.config['CACHE_TYPE'] = 'simple'  
 app.config['CACHE_DEFAULT_TIMEOUT'] = 1000  # in seconds
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # setting the mongodb client
 uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
