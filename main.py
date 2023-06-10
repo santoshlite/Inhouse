@@ -20,6 +20,9 @@ import re
 # OpenAI API key
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
+# Disable tokenizers parallelism
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 # MongoDB password
 db_password = os.getenv('DB_PASSWORD')
 
