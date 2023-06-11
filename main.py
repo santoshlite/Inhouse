@@ -1,17 +1,17 @@
 from __future__ import print_function
-from flask import Flask, send_from_directory, request, jsonify, redirect, render_template
+from flask import Flask, send_from_directory, request, jsonify, redirect
 from g_drive_service import GoogleDriveService
 import gdown
-from flask_caching import Cache
 import time
+import requests
 import pymongo
 from pymongo.mongo_client import MongoClient
 import itertools
 from markupsafe import Markup
 import certifi
+import modal
 import secrets
 import textract
-import heapq
 import openai
 import os
 import re
@@ -28,9 +28,7 @@ db_password = os.getenv('DB_PASSWORD')
 # Passage ranking model
 
 app = Flask(__name__)
-cache = Cache(app)
 
-app.config['CACHE_DEFAULT_TIMEOUT'] = 1000  # in seconds
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
@@ -50,7 +48,6 @@ URL_MAPPING = {
     '/': '/',
     '/auth': '/auth',
 }
-
 
 # setting the 2 databases
 db = client["userDocuments"]
@@ -762,40 +759,19 @@ def search(token):
 
     data = request.json
     query = data['value'] 
+    print(query)
 
     collection_history = db_history[email]
 
-    collection_documents = db[email]
-    
-    pipeline = [
-        { "$project": { "Blocks": 1 } },
-        { "$unwind": "$Blocks" }
-    ]
+    data = {
+        "query": query,
+        "email": email
+    }
 
-    cursor = collection_documents.aggregate(pipeline)
-
-    query_emb = model.encode(query)
-
-    top_blocks = []
-    num_top_blocks = 10
-
-    for document in cursor:
-        block = document['Blocks']
-        block_emb = model.encode(block)
-        score = util.dot_score(query_emb, block_emb)[0].cpu().tolist()
-        score = score[0]
-
-        if len(top_blocks) < num_top_blocks:
-            # If there are fewer than num_top_blocks, add the block and score directly
-            heapq.heappush(top_blocks, (score, block))
-        else:
-            # If the current score is greater than the minimum score in top_blocks, replace the minimum score and corresponding block
-            min_score = top_blocks[0][0]
-            if score > min_score:
-                heapq.heapreplace(top_blocks, (score, block))
-
-    # Retrieve the top blocks from the heap in descending order of scores
-    top_blocks = [block for score, block in heapq.nlargest(num_top_blocks, top_blocks)]
+    print("USING MODAL")
+    f = modal.Function.lookup("inhouse", "magic")
+    top_blocks = f.call(data)
+    print("DONE WITH MODAL")
 
     _history = collection_history.find({}).sort('_id', pymongo.DESCENDING).limit(3)
 
