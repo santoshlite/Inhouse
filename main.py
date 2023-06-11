@@ -3,7 +3,6 @@ from flask import Flask, send_from_directory, request, jsonify, redirect
 from g_drive_service import GoogleDriveService
 import gdown
 import time
-import requests
 import pymongo
 from pymongo.mongo_client import MongoClient
 import itertools
@@ -18,9 +17,6 @@ import re
 
 # OpenAI API key
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
-# Disable tokenizers parallelism
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # MongoDB password
 db_password = os.getenv('DB_PASSWORD')
