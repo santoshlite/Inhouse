@@ -50,35 +50,59 @@
   }
 
   async function search() {
-    if (inputValue === "") {
-      responseValue = "No text :(";
-      return;
-    }
-    else if (indexedInfo === "Upload files to get started!"){
-      responseValue = "Upload files first";
-      return;
-    }
-    
-    question = "";
-    responseValue = "Waiting for the LLM...";
-    blocksList = [];
+  responseValue = "";
+  if (inputValue === "") {
+    responseValue = "No text :(";
+    return;
+  }
+  else if (indexedInfo === "Upload files to get started!"){
+    responseValue = "Upload files first";
+    return;
+  }
+  console.log("searching");
+  question = "";
+  responseValue = "Waiting for the LLM...";
+  blocksList = [];
 
-    const response = await fetch(`./search/${token}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ value: inputValue })
-    });
+  const response = await fetch(`./search/${token}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/x-ndjson'
+    },
+    body: JSON.stringify({ value: inputValue })
+  });
 
-    const data = await response.json();
-    console.log(data)
+  const reader = response.body.getReader();
+
+  const chunks = [];
+  responseValue = "Waiting for the LLM...";
+  blocksList = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      // End of streaming
+      break;
+    }
+
+    const decoder = new TextDecoder();
+    const decodedValue = decoder.decode(value);
+    const parsed = JSON.parse(decodedValue);
+
+    if (parsed.response) {
+    // Perform actions when the "response" field exists
     question = "Q: " + inputValue;
-    responseValue = data.result;
-    blocksList = data.blocks;
-    console.log(blocksList)
+    responseValue = parsed.response.result;
+    blocksList = parsed.response.blocks;
+    break;
+  }
+    chunks.push(parsed.status);
+    responseValue = chunks[chunks.length - 1];
     await getHistoryList();
   }
+}
 
 
   async function askUrl() {
