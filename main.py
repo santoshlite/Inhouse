@@ -1,5 +1,5 @@
 from __future__ import print_function
-from flask import Flask, send_from_directory, request, jsonify, redirect
+from flask import Flask, send_from_directory, request, jsonify, redirect, Response, stream_with_context
 from g_drive_service import GoogleDriveService
 import gdown
 import time
@@ -11,6 +11,7 @@ import certifi
 import modal
 import secrets
 import textract
+import json
 import openai
 import os
 import re
@@ -749,39 +750,44 @@ def construct_prompt(query, top_blocks, history):
 def search(token):    
     # Get the email associated with the token
     email = get_email_from_token(token)
+    
+    response = Response(stream_with_context(generate_response(email)))
+    response.headers['Content-Type'] = 'application/x-ndjson'
+    return response
 
-    if email is None:
-        return jsonify({'result': 'Could not find the user.'})
+def generate_response(email):
 
+    yield json.dumps({"status": "Looking for most relevant blocks..."})
     data = request.json
     query = data['value'] 
-    print(query)
 
     collection_history = db_history[email]
-
+    
     data = {
         "query": query,
         "email": email
     }
 
-    print("USING MODAL")
+    print("MODAL TIME")
     f = modal.Function.lookup("inhouse", "magic")
     top_blocks = f.call(data)
-    print("DONE WITH MODAL")
 
+    yield json.dumps({"status": "Crafting prompt..."})
+    
     _history = collection_history.find({}).sort('_id', pymongo.DESCENDING).limit(3)
 
     history = list(_history)
 
     prompt = construct_prompt(query, top_blocks, history)
-    
+
+    yield json.dumps({"status": "Generating response..."})
     response = call_llm(prompt)
 
     print("===================================== RESPONSE FROM GPT-3 ===================================")
     print(response)
     print("===================================== END RESPONSE FROM GPT-3 ===================================")
 
-
+    yield json.dumps({"status": "Cleaning response..."})
     output = {"blocks": []}
 
     tags = re.findall(r"\[(\d+)\]", response)
@@ -826,16 +832,15 @@ def search(token):
 
     final_response = re.sub(r"\[(\d+)\]", lambda match: "{}".format(tag_mapping.get(match.group(1), match.group(1))), response)
     
-
     output["result_plain"] = response
 
     output["result"] = Markup("<pre class='response'>"+final_response +"</pre>") 
-    
+
     output["query"] = query
 
     record_history(collection_history, query, output)
-    
-    return jsonify(output)
+
+    yield json.dumps({"status" : "Done", "response": output})
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000, ssl_context='adhoc')
