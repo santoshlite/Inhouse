@@ -757,7 +757,7 @@ def search(token):
 
 def generate_response(email):
 
-    yield json.dumps({"status": "Looking for most relevant blocks..."}) + + '\n'
+    yield json.dumps({"status": "Looking for most relevant blocks..."}) + '\n'
     data = request.json
     query = data['value'] 
 
@@ -780,14 +780,14 @@ def generate_response(email):
 
     prompt = construct_prompt(query, top_blocks, history)
 
-    yield json.dumps({"status": "Generating response..."}) + + '\n'
+    yield json.dumps({"status": "Generating response..."}) + '\n'
     response = call_llm(prompt)
 
     print("===================================== RESPONSE FROM GPT-3 ===================================")
     print(response)
     print("===================================== END RESPONSE FROM GPT-3 ===================================")
 
-    yield json.dumps({"status": "Cleaning response..."}) + + '\n'
+    yield json.dumps({"status": "Cleaning response..."}) + '\n'
     output = {"blocks": []}
 
     tags = re.findall(r"\[(\d+)\]", response)
