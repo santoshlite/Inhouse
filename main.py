@@ -840,7 +840,7 @@ def generate_response(email):
 
     record_history(collection_history, query, output)
 
-    yield json.dumps({"status" : "Done", "response": output}) + + '\n'
+    yield json.dumps({"status" : "Done", "response": output}) + '\n'
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000, ssl_context='adhoc')
