@@ -832,7 +832,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (241:6) {#if showInputBox}
+    // (266:6) {#if showInputBox}
     function create_if_block(ctx) {
     	let div;
     	let input;
@@ -850,9 +850,9 @@ var app = (function () {
     			button.textContent = "Sync";
     			attr_dev(input, "type", "text");
     			attr_dev(input, "placeholder", "Share link to a folder...");
-    			add_location(input, file, 242, 8, 6472);
-    			add_location(button, file, 243, 8, 6564);
-    			add_location(div, file, 241, 6, 6458);
+    			add_location(input, file, 267, 8, 7012);
+    			add_location(button, file, 268, 8, 7104);
+    			add_location(div, file, 266, 6, 6998);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -886,14 +886,14 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(241:6) {#if showInputBox}",
+    		source: "(266:6) {#if showInputBox}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (252:8) {#each blocksList as block}
+    // (277:8) {#each blocksList as block}
     function create_each_block(ctx) {
     	let div1;
     	let div0;
@@ -923,12 +923,12 @@ var app = (function () {
     			t4 = space();
     			html_tag.a = t0;
     			attr_dev(p0, "class", "docname");
-    			add_location(p0, file, 255, 12, 6964);
+    			add_location(p0, file, 280, 12, 7504);
     			attr_dev(div0, "class", "title-tag");
-    			add_location(div0, file, 253, 10, 6897);
-    			add_location(p1, file, 257, 8, 7034);
+    			add_location(div0, file, 278, 10, 7437);
+    			add_location(p1, file, 282, 8, 7574);
     			attr_dev(div1, "class", "wrapper-block");
-    			add_location(div1, file, 252, 8, 6859);
+    			add_location(div1, file, 277, 8, 7399);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -956,7 +956,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(252:8) {#each blocksList as block}",
+    		source: "(277:8) {#each blocksList as block}",
     		ctx
     	});
 
@@ -1067,53 +1067,53 @@ var app = (function () {
     			}
 
     			attr_dev(div0, "class", "row");
-    			add_location(div0, file, 211, 0, 5264);
-    			add_location(h1, file, 217, 8, 5425);
+    			add_location(div0, file, 236, 0, 5804);
+    			add_location(h1, file, 242, 8, 5965);
     			attr_dev(input0, "placeholder", "Ask a question.");
     			attr_dev(input0, "class", "searchbar");
     			attr_dev(input0, "type", "text");
-    			add_location(input0, file, 220, 12, 5536);
+    			add_location(input0, file, 245, 12, 6076);
     			attr_dev(button, "class", "submit-button");
-    			add_location(button, file, 221, 12, 5668);
+    			add_location(button, file, 246, 12, 6208);
     			attr_dev(div1, "class", "input-container");
-    			add_location(div1, file, 219, 10, 5494);
+    			add_location(div1, file, 244, 10, 6034);
     			attr_dev(div2, "class", "search-container");
-    			add_location(div2, file, 218, 8, 5453);
+    			add_location(div2, file, 243, 8, 5993);
     			attr_dev(input1, "id", "fileInput");
     			attr_dev(input1, "type", "file");
     			set_style(input1, "display", "none");
     			input1.multiple = true;
-    			add_location(input1, file, 229, 12, 5937);
+    			add_location(input1, file, 254, 12, 6477);
     			attr_dev(label0, "for", "fileInput");
     			attr_dev(label0, "class", "upload-button");
-    			add_location(label0, file, 227, 10, 5847);
+    			add_location(label0, file, 252, 10, 6387);
     			attr_dev(div3, "class", "upload-button-container");
-    			add_location(div3, file, 226, 8, 5799);
+    			add_location(div3, file, 251, 8, 6339);
     			if (!src_url_equal(img.src, img_src_value = "https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "google drive icon");
-    			add_location(img, file, 235, 12, 6166);
+    			add_location(img, file, 260, 12, 6706);
     			attr_dev(input2, "type", "text");
     			set_style(input2, "display", "none");
-    			add_location(input2, file, 236, 12, 6320);
+    			add_location(input2, file, 261, 12, 6860);
     			attr_dev(label1, "class", "gdrive-button");
-    			add_location(label1, file, 234, 10, 6124);
+    			add_location(label1, file, 259, 10, 6664);
     			attr_dev(div4, "class", "gdrive-button-container");
-    			add_location(div4, file, 233, 8, 6076);
+    			add_location(div4, file, 258, 8, 6616);
     			attr_dev(div5, "class", "uploads");
-    			add_location(div5, file, 225, 8, 5769);
+    			add_location(div5, file, 250, 8, 6309);
     			attr_dev(p0, "class", "custom-i");
-    			add_location(p0, file, 246, 8, 6641);
+    			add_location(p0, file, 271, 8, 7181);
     			attr_dev(div6, "class", "top-bar");
-    			add_location(div6, file, 216, 6, 5395);
+    			add_location(div6, file, 241, 6, 5935);
     			attr_dev(b, "class", "query");
-    			add_location(b, file, 250, 28, 6758);
+    			add_location(b, file, 275, 28, 7298);
     			html_tag.a = null;
     			attr_dev(p1, "class", "response");
-    			add_location(p1, file, 250, 8, 6738);
+    			add_location(p1, file, 275, 8, 7278);
     			attr_dev(div7, "class", "wrapper-response");
-    			add_location(div7, file, 249, 6, 6699);
+    			add_location(div7, file, 274, 6, 7239);
     			attr_dev(div8, "class", "row-bar");
-    			add_location(div8, file, 215, 4, 5367);
+    			add_location(div8, file, 240, 4, 5907);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1326,6 +1326,8 @@ var app = (function () {
     	}
 
     	async function search() {
+    		$$invalidate(1, responseValue = "");
+
     		if (inputValue === "") {
     			$$invalidate(1, responseValue = "No text :(");
     			return;
@@ -1334,23 +1336,50 @@ var app = (function () {
     			return;
     		}
 
+    		console.log("searching");
     		$$invalidate(5, question = "");
     		$$invalidate(1, responseValue = "Waiting for the LLM...");
     		$$invalidate(3, blocksList = []);
 
     		const response = await fetch(`./search/${token}`, {
     			method: 'POST',
-    			headers: { 'Content-Type': 'application/json' },
+    			headers: {
+    				'Content-Type': 'application/json',
+    				'Accept': 'application/x-ndjson'
+    			},
     			body: JSON.stringify({ value: inputValue })
     		});
 
-    		const data = await response.json();
-    		console.log(data);
-    		$$invalidate(5, question = "Q: " + inputValue);
-    		$$invalidate(1, responseValue = data.result);
-    		$$invalidate(3, blocksList = data.blocks);
-    		console.log(blocksList);
-    		await getHistoryList();
+    		const reader = response.body.getReader();
+    		const chunks = [];
+    		$$invalidate(1, responseValue = "Waiting for the LLM...");
+    		$$invalidate(3, blocksList = []);
+
+    		while (true) {
+    			const { done, value } = await reader.read();
+
+    			if (done) {
+    				// End of streaming
+    				break;
+    			}
+
+    			const decoder = new TextDecoder();
+    			const decodedValue = decoder.decode(value);
+    			const parsed = JSON.parse(decodedValue);
+
+    			if (parsed.response) {
+    				// Perform actions when the "response" field exists
+    				$$invalidate(5, question = "Q: " + inputValue);
+
+    				$$invalidate(1, responseValue = parsed.response.result);
+    				$$invalidate(3, blocksList = parsed.response.blocks);
+    				break;
+    			}
+
+    			chunks.push(parsed.status);
+    			$$invalidate(1, responseValue = chunks[chunks.length - 1]);
+    			await getHistoryList();
+    		}
     	}
 
     	async function askUrl() {
@@ -1439,6 +1468,7 @@ var app = (function () {
     		const data = await response.json();
 
     		if (data.Message === "X") {
+    			console.log("here");
     			await fetchData();
     		} else {
     			const count = await getUploadedItems();
