@@ -12,6 +12,7 @@
   let question = "";
   let showInputBox = false;
   let urlGoogle;
+  let isSearching = false; // To prevent multiple searches
 
   async function getHistoryList() {
     const response = await fetch(`./get_history_list/${token}`);
@@ -59,7 +60,7 @@
     responseValue = "Upload files first";
     return;
   }
-  console.log("searching");
+  isSearching = true;
   question = "";
   responseValue = "Waiting for the LLM...";
   blocksList = [];
@@ -103,7 +104,6 @@
     await getHistoryList();
   }
 }
-
 
   async function askUrl() {
     showInputBox = true;
@@ -186,7 +186,7 @@
   }
 
   function handleKeyDown(event) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !isSearching) {
       search();
     }
   }
@@ -201,7 +201,6 @@
     const response = await fetch(`./sync_google/${token}`);
     const data = await response.json();
     if(data.Message === "X"){
-      console.log("here")
       await fetchData();
     }
     else{
