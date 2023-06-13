@@ -757,7 +757,7 @@ def search(token):
 
 def generate_response(email):
 
-    yield json.dumps({"status": "Looking for most relevant blocks..."}) + '\n'
+    yield json.dumps({"status": "Looking for most relevant blocks..."}) 
     data = request.json
     query = data['value'] 
 
@@ -772,7 +772,7 @@ def generate_response(email):
     f = modal.Function.lookup("inhouse", "magic")
     top_blocks = f.call(data)
 
-    yield json.dumps({"status": "Crafting prompt..."}) + '\n'
+    yield json.dumps({"status": "Crafting prompt..."})
     
     _history = collection_history.find({}).sort('_id', pymongo.DESCENDING).limit(3)
 
@@ -780,14 +780,14 @@ def generate_response(email):
 
     prompt = construct_prompt(query, top_blocks, history)
 
-    yield json.dumps({"status": "Generating response..."}) + '\n'
+    yield json.dumps({"status": "Generating response..."}) 
     response = call_llm(prompt)
 
     print("===================================== RESPONSE FROM GPT-3 ===================================")
     print(response)
     print("===================================== END RESPONSE FROM GPT-3 ===================================")
 
-    yield json.dumps({"status": "Cleaning response..."}) + '\n'
+    yield json.dumps({"status": "Cleaning response..."}) 
     output = {"blocks": []}
 
     tags = re.findall(r"\[(\d+)\]", response)
@@ -840,7 +840,7 @@ def generate_response(email):
 
     record_history(collection_history, query, output)
 
-    yield json.dumps({"status" : "Done", "response": output}) + '\n'
+    yield json.dumps({"status" : "Done", "response": output})
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000, ssl_context='adhoc')
