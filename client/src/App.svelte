@@ -68,7 +68,7 @@
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/x-ndjson'
+      'Accept': 'text/event-stream'
     },
     body: JSON.stringify({ value: inputValue })
   });
