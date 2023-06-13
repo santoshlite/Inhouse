@@ -89,9 +89,12 @@
 
     const decoder = new TextDecoder();
     const decodedValue = decoder.decode(value);
+    console.log("DECODED " + decodedValue);
+    console.log("DECODED2 " + decodedValue[0]);
     const semiParsed = JSON.stringify(decodedValue);
+    console.log(semiParsed);
     const parsed = JSON.parse(semiParsed);
-    console.log("Parsed "+parsed);
+    console.log("Parsed "+parsed[0]);
     if (parsed.response) {
     // Perform actions when the "response" field exists
     question = "Q: " + inputValue;
