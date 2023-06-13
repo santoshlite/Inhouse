@@ -89,8 +89,7 @@
 
     const decoder = new TextDecoder();
     const decodedValue = decoder.decode(value);
-    const semiParsed = JSON.stringify(decodedValue);
-    const parsed = JSON.parse(semiParsed);
+    const parsed = JSON.parse(decodedValue);
     console.log("Parsed "+parsed);
     if (parsed.response) {
     // Perform actions when the "response" field exists
