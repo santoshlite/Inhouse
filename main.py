@@ -780,7 +780,7 @@ def generate_response(email):
 
     prompt = construct_prompt(query, top_blocks, history)
 
-    yield json.dumps({"status": "Generating response..."}) 
+    yield json.dumps([{"status": "Generating response..."}]) 
     response = call_llm(prompt)
 
     print("===================================== RESPONSE FROM GPT-3 ===================================")
