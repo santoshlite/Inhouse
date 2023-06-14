@@ -53,15 +53,28 @@ db_history = client["userHistory"]
 # setting the collection for authentification
 token_email_collection = db["token_email_mapping"]
     
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+
+# Get the parent directory of the current file (api folder)
+api_folder_path = os.path.dirname(current_file_path)
+
+# Get the parent directory of the api folder (root folder)
+root_folder_path = os.path.dirname(api_folder_path)
+
+# Create the path to the HTML file in the client/src folder
+src_file_path = os.path.join(root_folder_path, 'client', 'public')
+print(src_file_path)
+
 @app.route("/")
 def base():
-    return send_from_directory('client/public', 'frontpage.html')
+    return send_from_directory(src, 'frontpage.html')
 
 @app.route("/app/<token>")
 def svelte_app(token):
     email = get_email_from_token(token)
     if email:
-        return send_from_directory('client/public', 'index.html')
+        return send_from_directory(src, 'index.html')
     else:
         return redirect('/')
 
@@ -89,16 +102,16 @@ def page_not_found(e):
     if closest_directory:
        return redirect(closest_directory)
     else:
-        return send_from_directory('client/public', '404.html')
+        return send_from_directory(src, '404.html')
     
 
 @app.route("/auth")
 def auth():
-    return send_from_directory('client/public', 'auth.html')
+    return send_from_directory(src, 'auth.html')
 
 @app.route("/<path:path>")
 def home(path):
-    return send_from_directory('client/public', path)
+    return send_from_directory(src, path)
 
 
 # Helper function that replace tags 
