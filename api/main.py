@@ -68,13 +68,13 @@ print(src_file_path)
 
 @app.route("/")
 def base():
-    return send_from_directory(src, 'frontpage.html')
+    return send_from_directory(src_file_path, 'frontpage.html')
 
 @app.route("/app/<token>")
 def svelte_app(token):
     email = get_email_from_token(token)
     if email:
-        return send_from_directory(src, 'index.html')
+        return send_from_directory(src_file_path, 'index.html')
     else:
         return redirect('/')
 
@@ -102,16 +102,16 @@ def page_not_found(e):
     if closest_directory:
        return redirect(closest_directory)
     else:
-        return send_from_directory(src, '404.html')
+        return send_from_directory(src_file_path, '404.html')
     
 
 @app.route("/auth")
 def auth():
-    return send_from_directory(src, 'auth.html')
+    return send_from_directory(src_file_path, 'auth.html')
 
 @app.route("/<path:path>")
 def home(path):
-    return send_from_directory(src, path)
+    return send_from_directory(src_file_path, path)
 
 
 # Helper function that replace tags 
