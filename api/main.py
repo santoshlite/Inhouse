@@ -68,6 +68,7 @@ print(src_file_path)
 
 @app.route("/")
 def base():
+    print(os.path.join(src_file_path, 'frontpage.html'))
     return send_from_directory(src_file_path, 'frontpage.html')
 
 @app.route("/app/<token>")
