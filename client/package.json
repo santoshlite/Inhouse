@@ -13,7 +13,7 @@
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
-    "start": "sirv public --single",
+    "start": "serve public -s -n -L -p $PORT",
     "start:dev": "sirv public --single --dev"
   },
   "devDependencies": {
