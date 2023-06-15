@@ -1,0 +1,1 @@
+web: gunicorn --timeout 300 --threads 4 main:app
