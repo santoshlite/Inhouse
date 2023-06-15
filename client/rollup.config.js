@@ -1,7 +1,6 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import livereload from 'rollup-plugin-livereload';
 import terser from '@rollup/plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import css from 'rollup-plugin-css-only'
@@ -32,7 +31,6 @@ export default {
 
     // Add the following plugins to handle non-JavaScript files
     sveltePreprocess(), // Preprocess the Svelte components
-    livereload('public'), // Watch the `public` directory and refresh the browser
     production && terser(), // Minify the output in production mode
   ],
   watch: {
