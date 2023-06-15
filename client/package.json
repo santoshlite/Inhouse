@@ -5,6 +5,7 @@
   "dependencies": {
     "rollup": "^3.23.0",
     "rollup-plugin-css-only": "^4.3.0",
+    "serve": "^14.2.0",
     "sirv-cli": "^0.4.6",
     "svelte-preprocess": "^5.0.4"
   },
