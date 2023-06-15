@@ -9,6 +9,7 @@
     "svelte-preprocess": "^5.0.4"
   },
   "scripts": {
+    "install": "npm install --omit=dev",
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
