@@ -10,8 +10,12 @@ stub = Stub("inhouse")
 
 model = SentenceTransformer('sentence-transformers/msmarco-MiniLM-L6-cos-v5')
 
+# MongoDB password
+db_password = os.getenv('DB_PASSWORD')
+
+
 # setting the mongodb client
-uri = f"mongodb+srv://inhouse:passwordinhouse@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
+uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(uri, tlsCAFile=certifi.where())
 
 db = client["userDocuments"]
