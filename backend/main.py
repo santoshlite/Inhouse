@@ -32,7 +32,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # setting the mongodb client
-uri = f"mongodb+srv://inhouse:passwordinhouse@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
+uri = f"mongodb+srv://inhouse:{db_password}@inhousedb.wglo6gd.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(uri, tlsCAFile=certifi.where())
 
 
