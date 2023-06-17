@@ -3,7 +3,7 @@
 
 Inhouse is the mini-business intelligence you've always dreamed of. It integrates into your workflow via Google Drive or file uploads, and answers all your questions using these documents as a source of knowledge.
 
-# How does it work under the hood
+# How does it work
 Writing...
 
 # Features we would like to add
