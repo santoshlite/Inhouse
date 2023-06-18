@@ -10,7 +10,7 @@
 </svelte:head>
 <div class="flex box" id="welcome">
   <div>
-    <h1>Inhouse is the AI business companion you've always wanted.</h1>
+    <h1>ChatGPT writes. <br> Inhouse reads.</h1>
     <a href="/auth">
       <button class="button">TRY IT</button>
     </a>
