@@ -5,7 +5,7 @@ Inhouse is a user-friendly, intuitive document assistant that helps you improve 
 
 Built with:
 <p align="center">
-  <img width="400" src="https://i.ibb.co/741rqhM/Bright-Colored-Tumblr-Banner-removebg-preview.png">
+  <img width="700" src="https://iili.io/H6ZzLtS.png">
 </p>
 
 ## How does it work
@@ -31,5 +31,6 @@ https://github.com/ssantoshp/inhouse/assets/61618641/c4e102c6-d08b-47e3-af5a-f48
   c.
 
 ## Credits
+This project was greatly inspired from [AlignmentSearch](https://github.com/FraserLee/AlignmentSearch) made by [Fraser Lee](https://github.com/FraserLee), [Henri Lemoine](https://github.com/henri123lemoine) and [Thomas Lemoine](https://github.com/Thomas-Lemoine). 
 
-
+We've basically used their OpenAI API prompt and tuned it a bit for our use case!
