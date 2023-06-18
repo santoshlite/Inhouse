@@ -1,7 +1,7 @@
 ## What is Inhouse
 ![repo-picture](https://github.com/ssantoshp/inhouse/assets/61618641/c41f75f5-602c-4469-97ed-01916dab94fc)
 
-Inhouse is a user-friendly, intuitive document assistant that helps you improve your productivity. Inhouse integrates seamlessly with your Google Drive, allowing you to ask questions about your documents using everyday language. It answers your questions effortlessly and provides sources from your documents, making knowledge retrieval a breeze.
+Inhouse is a **user-friendly** and **intuitive document assistant** that helps you improve your **productivity**. Inhouse integrates **seamlessly** with your **Google Drive**, allowing you to ask questions about your documents using **natural language**. It **answers your questions** effortlessly and **provides sources** from your documents, making knowledge retrieval a breeze.
 
 Built with:
 <p align="center">
