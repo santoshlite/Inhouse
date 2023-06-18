@@ -2,7 +2,6 @@
 // @ts-nocheck
     import { onMount } from 'svelte';
     import History from '/src/History.svelte';
-    import { variables } from '/src/lib/variables';
     import '/src/routes/styles.css';
   
     let inputValue = "";
