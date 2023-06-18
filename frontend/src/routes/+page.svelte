@@ -26,7 +26,7 @@
   <h2>Seamlessly integrate with your workflow via Google Drive or file uploads.</h2>
 </div>
 <div class="flex box" id="values-blurb">
-  <h2>Ask (complex) questions and get a fully detailed answer in less than a minute.</h2>
+  <h2>Ask (complex) questions and get a fully detailed answer in seconds.</h2>
 </div>
 <div class="flex box" id="values-animation">
   <img src="https://i.ibb.co/JjwQ7d7/pika-1686227852840-1x-1-removebg-preview.png" alt="demo" />
