@@ -21,14 +21,19 @@ https://github.com/ssantoshp/inhouse/assets/61618641/c4e102c6-d08b-47e3-af5a-f48
 ## How to run it locally
 1. Git clone the repo
 2. Setting up the frontend
-  a. Go to the `frontend` directory
-  b. Make sure to use node 18 (check out `nvm` if you are using another version)
-  c. `npm i`
-  d. `npm run dev` will start the server
+    - Go to the `frontend` directory
+    - Make sure to use node 18 (use `nvm` if you have another version)
+    - Run `npm i`
+    - Create a `.env` file and set `VITE_API_DOMAIN` to the url of the flask server
+    - Run `npm run dev` will start the server
 3. Setting up the backend
-  a. 
-  b. 
-  c.
+    - Go to the `backend` directory
+    - `pip install -r requirements.txt`
+    - Set up a MongoDB cluster and replace the connection string on `main.py`
+    - Make the `passage-ranking.py` file a Modal instance (more info [here](https://modal.com/docs/guide/trigger-deployed-functions))
+    - Creare a `.env` file and set the variables `OPENAI_API`, `DB_PASSWORD` and `APP_DOMAIN` (url of the vite server)
+    - Run `python3 main.py`
+4. Boom! You should be good to go but if you face a problem, feel free to make an issue :))
 
 ## Credits
 This project was greatly inspired from [AlignmentSearch](https://github.com/FraserLee/AlignmentSearch) made by [Fraser Lee](https://github.com/FraserLee), [Henri Lemoine](https://github.com/henri123lemoine) and [Thomas Lemoine](https://github.com/Thomas-Lemoine). 
