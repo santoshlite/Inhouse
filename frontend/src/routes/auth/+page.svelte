@@ -2,8 +2,8 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-
     import '/src/routes/styles.css';
+    import { variables } from '/src/lib/variables';
 
     onMount(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -37,7 +37,7 @@
 </script>
 
 <svelte:head>
-    <title>About</title>
+    <title>Inhouse | Authentification</title>
     <meta name="description" content="About this app" />
 </svelte:head>
 
@@ -45,10 +45,11 @@
     <div class='wrapper-form'>
         <h3 class="welcome">Welcome to inhouse 🏠</h3>
         <p class="subtext">Create an account with your email address and password, or use your existing credentials if you already have an account.</p>
-        <form action="https://127.0.0.1:8000/login" method="POST" class="form">
+        <form action={variables.basePath+"login"} method="POST" class="form">
             <input class="input-auth" type="email" id="email" name="email" placeholder="Email" oninput={validateEmail} required>
             <input class="input-auth" type="password" id="password" name="password" placeholder="Password" minlength="4" oninput={validatePassword} required>
             <button type="submit">Access</button>
 		</form>
     </div>
 </div>
+
