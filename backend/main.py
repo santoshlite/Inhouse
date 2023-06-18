@@ -23,7 +23,8 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 # MongoDB password
 db_password = os.getenv('DB_PASSWORD')
 
-# Passage ranking model
+# Frontend url
+frontend_url = os.getenv('APP_DOMAIN')
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -57,7 +58,7 @@ token_email_collection = db["token_email_mapping"]
 
 @app.route("/")
 def base():
-    return redirect('http://localhost:5173/')
+    return redirect(frontend_url)
 
 # method returns the closest matching directory
 def determine_closest_directory():
@@ -132,18 +133,18 @@ def login():
     # if the user exists and the password is correct, redirect to the app
     if existing_token and existing_password == password:
         token = existing_token
-        return redirect(f"http://localhost:5173/home/")
+        return redirect(f"{frontend_url}home/")
     
     # if the user exists but the password is incorrect, redirect to the auth page
     elif existing_token and existing_password != password:
-        return redirect("http://localhost:5173/auth?error=wrong_password")
+        return redirect(f"{frontend_url}auth?error=wrong_password")
 
     # if the user does not exist, create a new user and token, store its password
     else:
         token = generate_token()
         associate_email_with_token(token, email, password)
 
-    return redirect(f"http://localhost:5173/home/")
+    return redirect(f"{frontend_url}home/")
 
 # get the number of files uploaded by the user -> to display under search bar
 @app.route("/home/get_uploaded_count/")
@@ -818,3 +819,4 @@ def generate_response(email):
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000, ssl_context='adhoc')
+
