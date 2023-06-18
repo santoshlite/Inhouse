@@ -677,7 +677,7 @@ def construct_prompt(query, top_blocks, history):
 
     prompt = []
 
-    system_prompt = "You are a helpful assistant whose primary role is to assist business/shop owners and their employees in retrieving information and answering questions based on the documents they upload." \
+    system_prompt = "You are a helpful document assistant whose primary role is to assist people in retrieving information and answering questions based on the documents they upload." \
             "Please give a clear and coherent answer to the user's questions.(written after \"Q:\") " \
             "using the following sources. Each source is labeled with a tag number using the format: [1], [2], etc. Feel free to " \
             "use the sources in any order, and try to use multiple sources in your answers.\n\n"
@@ -695,8 +695,7 @@ def construct_prompt(query, top_blocks, history):
         system_prompt += "\n\n"\
             "Before the question (\"Q: \"), there will be a history of previous questions and answers. " \
             "These sources only apply to the last question. Any sources used in previous answers " \
-            "are invalid for the current question. For the current question, please rely solely on "\
-            "the sources provided in its prompt."
+            "are invalid."
 
     prompt.append({"role": "system", "content": system_prompt.strip()})
 
