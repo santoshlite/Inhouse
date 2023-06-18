@@ -2,6 +2,7 @@
 // @ts-nocheck
     import { onMount } from 'svelte';
     import History from '/src/History.svelte';
+    import { variables } from '/src/lib/variables';
     import '/src/routes/styles.css';
   
     let inputValue = "";
@@ -17,7 +18,7 @@
     let isSearching = false; // To prevent multiple searches
   
     async function getHistoryList() {
-      const response = await fetch(`https://127.0.0.1:8000/home/get_history_list/`);
+      const response = await fetch(variables.basePath+`home/get_history_list/`);
       const data = await response.json();
   
       if (response.ok) {
@@ -29,7 +30,7 @@
 
   
     async function getUploadedItems() {
-      const response = await fetch(`https://127.0.0.1:8000/home/get_uploaded_count/`);
+      const response = await fetch(variables.basePath+`home/get_uploaded_count/`);
       const data = await response.text();
       return data;
     }
@@ -61,7 +62,7 @@
     responseValue = "Waiting for the LLM...";
     blocksList = [];
   
-    const response = await fetch(`https://127.0.0.1:8000/home/search/`, {
+    const response = await fetch(variables.basePath+`home/search/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +117,7 @@
   
       indexedInfo = "Loading your Google Drive folder...";
   
-      const response = await fetch(`https://127.0.0.1:8000/home/upload_google_file/`, {
+      const response = await fetch(variables.basePath+`home/upload_google_file/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -148,7 +149,7 @@
         formData.append('files[]', fileInput.files[i]);
       }
   
-      const response = await fetch(`https://127.0.0.1:8000/home/upload_file/`, {
+      const response = await fetch(variables.basePath+`home/upload_file/`, {
         method: 'POST',
         body: formData
       });
@@ -163,7 +164,7 @@
     }
   
     async function fetchResponse(query) {
-      const response = await fetch(`https://127.0.0.1:8000/home/get_response_from_query/`, {
+      const response = await fetch(variables.basePath+`home/get_response_from_query/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -194,7 +195,7 @@
   
     async function syncGoogle() {
       indexedInfo = "Syncing with Google Drive...";
-      const response = await fetch(`https://127.0.0.1:8000/home/sync_google/`);
+      const response = await fetch(variables.basePath+`home/sync_google/`);
       const data = await response.json();
       if(data.Message === "X"){
         await fetchData();
@@ -227,6 +228,11 @@
     });
   
   </script>
+
+  <svelte:head>
+    <title>Inhouse | Home</title>
+    <meta name="description" content="User's homepage" />
+  </svelte:head>
   
   <div class="row">
         <History historyList={historylist} fetchResponse={fetchResponse}/>
