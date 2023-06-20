@@ -207,27 +207,6 @@
       return data;
     }
   
-    function scrollToNextSpan(spanId) {
-    const spanElements = document.getElementsByClassName('one');
-    const currentIndex = Array.from(spanElements).findIndex(span => span.id === spanId);
-  
-    if (currentIndex !== -1) {
-      const nextIndex = currentIndex + 1;
-  
-      if (nextIndex < spanElements.length) {
-        const nextSpan = spanElements[nextIndex];
-        nextSpan.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }
-
-    function scrollToElement(id) {
-		  const element = document.getElementById(id);
-		  if (element) {
-			element.scrollIntoView({ behavior: 'smooth' });
-		  }
-		}
-  
     onMount(async () => {
       await fetchData();
       await getHistoryList();
