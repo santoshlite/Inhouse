@@ -4,20 +4,6 @@
     import { onMount } from 'svelte';
     import '/src/routes/styles.css';
 
-    onMount(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');	
-	console.log(urlParams);
-	console.log(error);
-
-        if (error === 'wrong_password') {
-            const errorMessage = document.createElement('p');
-            errorMessage.textContent = 'Wrong password. Try again.';
-            errorMessage.classList.add('error-message');
-            document.querySelector('.wrapper-form').appendChild(errorMessage);
-        }
-    });
-
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
@@ -41,6 +27,20 @@
     <title>Inhouse | Authentification</title>
     <meta name="description" content="About this app" />
 </svelte:head>
+
+<script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+
+            if (error === 'wrong_password') {
+                const errorMessage = document.createElement('p');
+                errorMessage.textContent = 'Wrong password. Try again.';
+				errorMessage.classList.add('error-message');
+                document.querySelector('.wrapper-form').appendChild(errorMessage);
+            }
+        }
+</script>
 
 <div class="auth-container">
     <div class='wrapper-form'>
