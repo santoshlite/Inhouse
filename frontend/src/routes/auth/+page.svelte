@@ -4,6 +4,20 @@
     import { onMount } from 'svelte';
     import '/src/routes/styles.css';
 
+    onMount(() => {
+        console.log("Hello world");
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("Hello Moon");
+        const error = urlParams.get('error');
+
+        if (error === 'wrong_password') {
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Wrong password. Try again.';
+            errorMessage.classList.add('error-message');
+            document.querySelector('.wrapper-form').appendChild(errorMessage);
+        }
+    });
+
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
