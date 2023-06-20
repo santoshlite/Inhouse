@@ -28,20 +28,6 @@
     <meta name="description" content="About this app" />
 </svelte:head>
 
-<script>
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
-
-            if (error === 'wrong_password') {
-                const errorMessage = document.createElement('p');
-                errorMessage.textContent = 'Wrong password. Try again.';
-				errorMessage.classList.add('error-message');
-                document.querySelector('.wrapper-form').appendChild(errorMessage);
-            }
-        }
-</script>
-
 <div class="auth-container">
     <div class='wrapper-form'>
         <h3 class="welcome">Welcome to inhouse 🏠</h3>
