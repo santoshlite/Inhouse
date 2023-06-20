@@ -6,7 +6,9 @@
 
     onMount(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
+        const error = urlParams.get('error');	
+	console.log(urlParams);
+	console.log(error);
 
         if (error === 'wrong_password') {
             const errorMessage = document.createElement('p');
@@ -48,6 +50,6 @@
             <input class="input-auth" type="email" id="email" name="email" placeholder="Email" oninput={validateEmail} required>
             <input class="input-auth" type="password" id="password" name="password" placeholder="Password" minlength="4" oninput={validatePassword} required>
             <button type="submit">Access</button>
-		</form>
+        </form>
     </div>
 </div>
