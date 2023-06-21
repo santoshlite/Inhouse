@@ -2,9 +2,9 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-    let url = "";
+    let url = "empty";
     async function showErrorMessage() {
-        url = "hey"
+        url = window.location.href
         if (window.location.href === 'https://inhouse.up.railway.app/auth?error=wrong_password') {
             url = "error"
         }
