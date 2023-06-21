@@ -2,11 +2,10 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-
+    let url = "";
     async function showErrorMessage() {
-        console.log("Hello world");
         const urlParams = new URLSearchParams(window.location.search);
-        console.log("Hello Moon");
+        url = urlParams;
         const error = urlParams.get('error');
 
         if (error === 'wrong_password') {
@@ -40,6 +39,7 @@
     });
 </script>
 
+
 <svelte:head>
     <title>Inhouse | Authentification</title>
     <meta name="description" content="About this app" />
@@ -52,6 +52,7 @@
 <div class="auth-container">
     <div class='wrapper-form'>
         <h3 class="welcome">Welcome to inhouse 🏠</h3>
+        <p>URL: {url}</p>
         <p class="subtext">Create an account with your email address and password, or use your existing credentials if you already have an account.</p>
         <form action={import.meta.env.VITE_API_DOMAIN+"login"} method="POST" class="form">
             <input class="input-auth" type="email" id="email" name="email" placeholder="Email" oninput={validateEmail} required>
