@@ -2,8 +2,8 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-    let url = "empty";
-    async function showErrorMessage() {
+
+    function showErrorMessage() {
         url = window.location.href
         if (window.location.href === 'https://inhouse.up.railway.app/auth?error=wrong_password') {
             url = "error"
@@ -18,7 +18,10 @@
             document.querySelector('.wrapper-form').appendChild(errorMessage);
         }
     }
+
+    let url = "empty";
     showErrorMessage();
+
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
@@ -37,7 +40,7 @@
         }
     }
 
-    onMount(async () => {
+    onMount(() => {
       await showErrorMessage();
     });
 </script>
