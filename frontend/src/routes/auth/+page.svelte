@@ -2,8 +2,12 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
+
     let url = "empty";
     
+    if(url === "empty"){
+        url = "do something here";
+    }
 
     function showErrorMessage() {
         if (typeof window !== 'undefined') {
