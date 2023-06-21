@@ -1,31 +1,32 @@
 <script>
-    // @ts-nocheck
-
     import { onMount } from 'svelte';
     
-    function showErrorMessage() {
-        let url = "empty";
-        if (typeof window !== 'undefined') {
-          url = 'You are on the browser,You are good to go'
-          } else {
-          url = 'You are on the server,Cannot execute'
-         }
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
+    let url = "empty"; // Declare the url variable with a default value
     
-            if (error === 'wrong_password') {
-                const errorMessage = document.createElement('p');
-                errorMessage.textContent = 'Wrong password. Try again.';
-                errorMessage.classList.add('error-message');
-                document.querySelector('.wrapper-form').appendChild(errorMessage);
-            }
-        } 
+    function showErrorMessage() {
+        if (typeof window !== 'undefined') {
+            url = window.location.href; // Update the value of url if running in the browser
+        } else {
+            url = 'You are on the server, Cannot execute';
+        }
+    
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+    
+        if (error === 'wrong_password') {
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Wrong password. Try again.';
+            errorMessage.classList.add('error-message');
+            document.querySelector('.wrapper-form').appendChild(errorMessage);
+        }
+    }
     
     onMount(showErrorMessage);
-
-    if(url === "empty"){
+    
+    if (url === "empty") {
         url = "do something here";
     }
+
 
     function validateEmail(event) {
         const input = event.target;
