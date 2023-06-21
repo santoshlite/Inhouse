@@ -2,7 +2,6 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-    import '/src/routes/styles.css';
 
     async function showErrorMessage() {
         console.log("Hello world");
@@ -45,6 +44,10 @@
     <title>Inhouse | Authentification</title>
     <meta name="description" content="About this app" />
 </svelte:head>
+
+<style>
+    @import '/src/routes/styles.css';
+</style>
 
 <div class="auth-container">
     <div class='wrapper-form'>
