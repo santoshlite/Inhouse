@@ -3,18 +3,9 @@
 
     import { onMount } from 'svelte';
     import '/src/routes/styles.css';
+    import { page } from '$app/stores';
 
-    onMount(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-
-        if (error === 'wrong_password') {
-            const errorMessage = document.createElement('p');
-            errorMessage.textContent = 'Wrong password. Try again.';
-            errorMessage.classList.add('error-message');
-            document.querySelector('.wrapper-form').appendChild(errorMessage);
-        }
-    });
+    const isBeta = $page.url.searchParams.has('error');
 
     function validateEmail(event) {
         const input = event.target;
@@ -43,6 +34,7 @@
 <div class="auth-container">
     <div class='wrapper-form'>
         <h3 class="welcome">Welcome to inhouse 🏠</h3>
+        <p>{isBeta}</p>
         <p class="subtext">Create an account with your email address and password, or use your existing credentials if you already have an account.</p>
         <form action={import.meta.env.VITE_API_DOMAIN+"login"} method="POST" class="form">
             <input class="input-auth" type="email" id="email" name="email" placeholder="Email" oninput={validateEmail} required>
