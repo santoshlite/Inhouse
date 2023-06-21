@@ -19,7 +19,7 @@
             document.querySelector('.wrapper-form').appendChild(errorMessage);
         }
     }
-
+    showErrorMessage();
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
@@ -38,9 +38,6 @@
         }
     }
 
-    onMount(() => {
-      showErrorMessage();
-    });
 </script>
 
 
