@@ -11,9 +11,9 @@
 
     function showErrorMessage() {
         if (typeof window !== 'undefined') {
-          console.log('You are on the browser,You are good to go')
+          url = 'You are on the browser,You are good to go'
           } else {
-          console.log('You are on the server,Cannot execute')
+          url = 'You are on the server,Cannot execute'
          }
             const urlParams = new URLSearchParams(window.location.search);
             const error = urlParams.get('error');
