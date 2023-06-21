@@ -4,6 +4,7 @@
     import { onMount } from 'svelte';
     let url = "";
     async function showErrorMessage() {
+        url = "hey"
         if (window.location.href === 'https://inhouse.up.railway.app/auth?error=wrong_password') {
             url = "error"
         }
