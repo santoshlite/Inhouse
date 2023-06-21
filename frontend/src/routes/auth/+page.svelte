@@ -42,7 +42,7 @@
     }
 
     onMount(() => {
-      await showErrorMessage();
+      showErrorMessage();
     });
 </script>
 
