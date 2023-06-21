@@ -2,11 +2,15 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-   let url = "empty";
+    let url = "empty";
+    
 
     function showErrorMessage() {
         if (typeof window !== 'undefined') {
-            url = 'You are on the browser,You are good to go';
+          console.log('You are on the browser,You are good to go')
+          } else {
+          console.log('You are on the server,Cannot execute')
+         }
             const urlParams = new URLSearchParams(window.location.search);
             const error = urlParams.get('error');
     
