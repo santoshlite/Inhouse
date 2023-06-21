@@ -2,14 +2,13 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-
-    let url = "empty";
     
     if(url === "empty"){
         url = "do something here";
     }
 
     function showErrorMessage() {
+        let url = "empty";
         if (typeof window !== 'undefined') {
           url = 'You are on the browser,You are good to go'
           } else {
@@ -27,6 +26,7 @@
         } 
     
     onMount(showErrorMessage);
+
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
