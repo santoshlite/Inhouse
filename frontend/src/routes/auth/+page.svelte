@@ -20,10 +20,7 @@
                 errorMessage.classList.add('error-message');
                 document.querySelector('.wrapper-form').appendChild(errorMessage);
             }
-        } else {
-            url = 'You are on the server, Cannot execute';
-        }
-    }
+        } 
     
     onMount(showErrorMessage);
     function validateEmail(event) {
