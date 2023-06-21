@@ -10,22 +10,15 @@
         } else {
             url = 'You are on the server, Cannot execute';
         }
-    
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-    
-        if (error === 'wrong_password') {
-            const errorMessage = document.createElement('p');
-            errorMessage.textContent = 'Wrong password. Try again.';
-            errorMessage.classList.add('error-message');
-            document.querySelector('.wrapper-form').appendChild(errorMessage);
-        }
     }
     
     onMount(showErrorMessage);
     
     if (url === "empty") {
-        url = "do something here";
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Wrong password. Try again.';
+            errorMessage.classList.add('error-message');
+            document.querySelector('.wrapper-form').appendChild(errorMessage);
     }
 
 
