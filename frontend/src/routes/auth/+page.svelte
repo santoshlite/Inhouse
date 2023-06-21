@@ -20,7 +20,7 @@
     }
 
     let url = "empty";
-    let url = "really empty";
+    url = "really empty";
     showErrorMessage();
 
     function validateEmail(event) {
