@@ -1,4 +1,5 @@
 <script>
+    // @ts-nocheck
     import { onMount } from 'svelte';
     
     let url = "empty"; // Declare the url variable with a default value
