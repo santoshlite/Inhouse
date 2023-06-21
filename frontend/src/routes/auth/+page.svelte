@@ -2,12 +2,13 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-
+    
     function showErrorMessage() {
-        url = window.location.href
-        if (window.location.href === 'https://inhouse.up.railway.app/auth?error=wrong_password') {
-            url = "error"
-        }
+        if (typeof window !== 'undefined') {
+          url = 'You are on the browser,You are good to go'
+          } else {
+          url = 'You are on the server,Cannot execute'
+         }
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
 
