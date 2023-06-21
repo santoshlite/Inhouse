@@ -2,8 +2,11 @@
     // @ts-nocheck
 
     import { onMount } from 'svelte';
-    let url = window.location.href;
-
+    let url="empty";
+    function getURL(){
+        url = window.location.href;
+    }
+    getURL();
     function validateEmail(event) {
         const input = event.target;
         if (!input.checkValidity()) {
