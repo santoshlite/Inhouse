@@ -4,7 +4,7 @@
     import { onMount } from 'svelte';
     import '/src/routes/styles.css';
 
-    onMount(() => {
+    async function showErrorMessage() {
         console.log("Hello world");
         const urlParams = new URLSearchParams(window.location.search);
         console.log("Hello Moon");
@@ -16,7 +16,7 @@
             errorMessage.classList.add('error-message');
             document.querySelector('.wrapper-form').appendChild(errorMessage);
         }
-    });
+    }
 
     function validateEmail(event) {
         const input = event.target;
@@ -35,6 +35,10 @@
             input.setCustomValidity('');
         }
     }
+
+    onMount(async () => {
+      await showErrorMessage();
+    });
 </script>
 
 <svelte:head>
