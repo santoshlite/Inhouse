@@ -3,10 +3,6 @@
 
     import { onMount } from 'svelte';
     
-    if(url === "empty"){
-        url = "do something here";
-    }
-
     function showErrorMessage() {
         let url = "empty";
         if (typeof window !== 'undefined') {
@@ -26,6 +22,10 @@
         } 
     
     onMount(showErrorMessage);
+
+    if(url === "empty"){
+        url = "do something here";
+    }
 
     function validateEmail(event) {
         const input = event.target;
