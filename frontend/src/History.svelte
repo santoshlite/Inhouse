@@ -15,6 +15,7 @@ function hasItems(list) {
     {#if hasItems(historyList)}
     <div class="list-container">
         {#each historyList as item}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="history-item" on:click={fetchResponse(item)}>📄 &nbsp; {item}</div>
         {/each}
     </div>
