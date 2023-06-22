@@ -1,7 +1,7 @@
 <script>
 // @ts-nocheck
 import { onMount } from 'svelte';
-import History from '/src/History.svelte';
+import History from '/src/lib/History.svelte';
 import '/src/routes/styles.css';
 
 let responseValue = "Ready to take your questions!";
