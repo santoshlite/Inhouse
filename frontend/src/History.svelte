@@ -1,26 +1,24 @@
 <script>
 // @ts-nocheck
 
-    export let historyList = [];
-    export let fetchResponse;
-  
-    function hasItems(list) {
-      return list && list.length > 0;
-    }
-    
-  </script>
-  
-  
-  <div class="wrapper">
+export let historyList = [];
+export let fetchResponse;
+
+function hasItems(list) {
+    return list && list.length > 0;
+}
+</script>
+
+<div class="wrapper">
     <div class="title">History</div>
-  
+
     {#if hasItems(historyList)}
-      <div class="list-container">
+    <div class="list-container">
         {#each historyList as item}
-          <div class="history-item" on:click={fetchResponse(item)}>📄 &nbsp; {item}</div>
+        <div class="history-item" on:click={fetchResponse(item)}>📄 &nbsp; {item}</div>
         {/each}
-      </div>
+    </div>
     {:else}
-      <div class="empty-message">It's quiet here...</div>
+    <div class="empty-message">It's quiet here...</div>
     {/if}
-  </div>
+</div>
