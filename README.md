@@ -9,9 +9,9 @@ Built with:
 </p>
 
 ## How does it work
-1. Go to [**inhouse**](https://inhouse.up.railway.app/)
+1. Go to [**Inhouse**](https://inhouse.up.railway.app/)
 2. Create an account
-3. Upload files or give a sharing link to one of your Google Drive folder by clicking on "Sync Drive"
+3. Upload files or give a sharing link to one of your Google Drive folders by clicking on "Sync Drive"
 4. Shoot your questions!
 
 ## Demo
