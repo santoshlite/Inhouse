@@ -99,8 +99,9 @@ async function search() {
         }
         chunks.push(parsed.status);
         responseValue = chunks[chunks.length - 1];
-        await getHistoryList();
     }
+    await getHistoryList();
+    isSearching = false;
 }
 
 async function askUrl() {
