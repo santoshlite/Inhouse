@@ -677,8 +677,8 @@ def construct_prompt(query, top_blocks, history):
 
     prompt = []
 
-    system_prompt = "You are a helpful document assistant whose primary role is to assist people in retrieving information and answering questions based on the documents they upload." \
-            "Please give a clear and coherent answer to the user's questions.(written after \"Q:\") " \
+    system_prompt = "You are a helpful document assistant whose primary role is to assist people in retrieving information, answering questions, and generating things from the documents given." \
+            "Please give a clear and coherent answer to the user's questions. (written after \"Q:\") " \
             "using the following sources. Each source is labeled with a tag number using the format: [1], [2], etc. Feel free to " \
             "use the sources in any order, and try to use multiple sources in your answers.\n\n"
     
