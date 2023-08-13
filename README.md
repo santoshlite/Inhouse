@@ -13,6 +13,10 @@ Built with:
 3. Upload files or give a sharing link to one of your Google Drive folders by clicking on "Sync Drive"
 4. Shoot your questions!
 
+## Architecture
+![Untitled-2023-08-13-1252](https://github.com/ssantoshp/Inhouse/assets/61618641/ed0ef937-a511-4ca2-baf9-b5c9a7081e6c)
+
+
 ## Demo
 https://github.com/ssantoshp/inhouse/assets/61618641/c4e102c6-d08b-47e3-af5a-f482a505d08c
 
